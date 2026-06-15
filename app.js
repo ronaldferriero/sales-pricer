@@ -3277,16 +3277,17 @@ function syncSharedProcessInputs() {
   const tylerTemplated = Number(els.tylerOwnedTemplatedProcesses?.value) || 0;
   const clientTemplatedInput = Number(els.clientOwnedTemplatedProcesses?.value) || 0;
   const appolloMode = isAppolloMode();
-  const shouldForceFullServices = (
-    !appolloMode &&
-    els.serviceDeliveryModel?.value !== "addon-work"
-    && clientCustomInput === 0
-    && clientTemplatedInput === 0
-    && (tylerCustom > 0 || tylerTemplated > 0)
-  );
-  if (shouldForceFullServices && els.serviceDeliveryModel) {
-    els.serviceDeliveryModel.value = "full";
-  }
+  // Removed auto-forcing to "full" - let users choose their own delivery model
+  // const shouldForceFullServices = (
+  //   !appolloMode &&
+  //   els.serviceDeliveryModel?.value !== "addon-work"
+  //   && clientCustomInput === 0
+  //   && clientTemplatedInput === 0
+  //   && (tylerCustom > 0 || tylerTemplated > 0)
+  // );
+  // if (shouldForceFullServices && els.serviceDeliveryModel) {
+  //   els.serviceDeliveryModel.value = "full";
+  // }
   const deliveryModel = getServiceDeliveryModelConfig(els.serviceDeliveryModel?.value);
   const autoEstimateClient = deliveryModel.isShared && !deliveryModel.isCustomShared;
   if (els.clientOwnedProcesses) {
