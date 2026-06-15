@@ -1162,6 +1162,18 @@ function getAddonServiceItems() {
   const suiteCount = Math.max(selectedSuites.length, 1);
   const esrCaseTypes = Number(els.esrCaseTypeCount?.value) || 0;
   const hourlyRate = getAdminSettings().hourlyRate;
+  const isAddonOnly = els.quoteType?.value === "addon-only";
+
+  // These add-ons are included in base implementation hours for Full/Shared/Apollo
+  // They only get separate hours for Add-On-Only deals
+  const includedInBaseImplementation = [
+    "civic-access",
+    "workforce-mobile",
+    "erp",
+    "erp-pro",
+    "new-world-erp",
+    "executive-insights"
+  ];
 
   return selectedAddons.map((addonId) => {
     const addon = CONFIG.addons.find((item) => item.id === addonId);
@@ -1169,7 +1181,16 @@ function getAddonServiceItems() {
     const multiplier = config.perSuite ? suiteCount : 1;
     const extraHours = config.extraCaseTypeHours ? (config.extraCaseTypeHours * esrCaseTypes) : 0;
     const baseHours = Number(config.hours) || 0;
-    const hours = baseHours > 0 || extraHours > 0 ? roundQuotedHours((baseHours * multiplier) + extraHours, els.quoteType?.value === "addon-only") : 0;
+
+    // If this add-on is included in base implementation and it's NOT an add-on-only deal, set hours to 0
+    let calculatedHours = 0;
+    if (includedInBaseImplementation.includes(addonId) && !isAddonOnly) {
+      calculatedHours = 0; // Included in implementation consultant hours
+    } else {
+      calculatedHours = baseHours > 0 || extraHours > 0 ? roundQuotedHours((baseHours * multiplier) + extraHours, isAddonOnly) : 0;
+    }
+
+    const hours = calculatedHours;
     const rateBasisParts = [];
     if (config.perSuite) {
       rateBasisParts.push(`${baseHours} hours x ${suiteCount} suite${suiteCount === 1 ? "" : "s"}`);
