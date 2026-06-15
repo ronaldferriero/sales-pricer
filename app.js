@@ -39,6 +39,22 @@ function switchPage(pageName) {
   localStorage.setItem('currentPage', pageName);
 }
 
+// Ensure quotes page is default on load
+document.addEventListener('DOMContentLoaded', function() {
+  // Always start on quotes page
+  const quotesPage = document.getElementById('quotesPage');
+  const analyticsPage = document.getElementById('analyticsPage');
+  const quotesTab = document.querySelector('.nav-tab[data-page="quotes"]');
+  const analyticsTab = document.querySelector('.nav-tab[data-page="analytics"]');
+
+  if (quotesPage) quotesPage.classList.add('active');
+  if (analyticsPage) analyticsPage.classList.remove('active');
+  if (quotesTab) quotesTab.classList.add('active');
+  if (analyticsTab) analyticsTab.classList.remove('active');
+
+  console.log('Page initialized - quotes page is active');
+});
+
 const CONFIG = {
   stepDefinitions: {
     client: {
