@@ -1,3 +1,44 @@
+// ========== PAGE NAVIGATION (Must be first for onclick handlers) ==========
+function switchPage(pageName) {
+  console.log('Switching to page:', pageName);
+
+  // Hide all pages
+  document.querySelectorAll('.page-content').forEach(page => {
+    page.classList.remove('active');
+  });
+
+  // Remove active class from all nav tabs
+  document.querySelectorAll('.nav-tab').forEach(tab => {
+    tab.classList.remove('active');
+  });
+
+  // Show selected page
+  const targetPage = document.getElementById(pageName + 'Page');
+  if (targetPage) {
+    targetPage.classList.add('active');
+    console.log('Activated page:', pageName);
+  } else {
+    console.error('Page not found:', pageName + 'Page');
+  }
+
+  // Add active class to clicked tab
+  const targetTab = document.querySelector('.nav-tab[data-page="' + pageName + '"]');
+  if (targetTab) {
+    targetTab.classList.add('active');
+  }
+
+  // If switching to analytics, refresh the data
+  if (pageName === 'analytics' && typeof getAllQuotesForAnalytics === 'function') {
+    setTimeout(function() {
+      const quotes = getAllQuotesForAnalytics();
+      updateAnalyticsDashboard(quotes);
+    }, 100);
+  }
+
+  // Save current page to localStorage
+  localStorage.setItem('currentPage', pageName);
+}
+
 const CONFIG = {
   stepDefinitions: {
     client: {
@@ -8645,49 +8686,4 @@ window.addCurrentQuoteToComparison = addCurrentQuoteToComparison;
 window.openComparisonModal = openComparisonModal;
 window.closeComparisonModal = closeComparisonModal;
 
-// ========== PAGE NAVIGATION ==========
-
-function switchPage(pageName) {
-  // Hide all pages
-  document.querySelectorAll('.page-content').forEach(page => {
-    page.classList.remove('active');
-  });
-
-  // Remove active class from all nav tabs
-  document.querySelectorAll('.nav-tab').forEach(tab => {
-    tab.classList.remove('active');
-  });
-
-  // Show selected page
-  const targetPage = document.getElementById(`${pageName}Page`);
-  if (targetPage) {
-    targetPage.classList.add('active');
-  }
-
-  // Add active class to clicked tab
-  const targetTab = document.querySelector(`.nav-tab[data-page="${pageName}"]`);
-  if (targetTab) {
-    targetTab.classList.add('active');
-  }
-
-  // If switching to analytics, refresh the data
-  if (pageName === 'analytics') {
-    setTimeout(() => {
-      const quotes = getAllQuotesForAnalytics();
-      updateAnalyticsDashboard(quotes);
-    }, 100);
-  }
-
-  // Save current page to localStorage
-  localStorage.setItem('currentPage', pageName);
-}
-
-window.switchPage = switchPage;
-
-// Restore last viewed page on load
-setTimeout(() => {
-  const lastPage = localStorage.getItem('currentPage') || 'quotes';
-  if (lastPage === 'analytics') {
-    switchPage('analytics');
-  }
-}, 500);
+// Page navigation already defined at top of file - see line 1
