@@ -849,6 +849,11 @@ h3 {
   place-items: center;
 }
 
+.library-modal.hidden-step,
+.library-modal[hidden] {
+  display: none !important;
+}
+
 .library-backdrop {
   position: absolute;
   inset: 0;
