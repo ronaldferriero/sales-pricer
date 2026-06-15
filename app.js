@@ -1172,7 +1172,12 @@ function getAddonServiceItems() {
     "erp",
     "erp-pro",
     "new-world-erp",
-    "executive-insights"
+    "executive-insights",
+    "tyler-cashiering",
+    "enterprise-assessment-tax",
+    "eagle-recorder",
+    "enterprise-asset-management",
+    "enterprise-service-requests"
   ];
 
   return selectedAddons.map((addonId) => {
