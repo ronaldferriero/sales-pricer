@@ -27,6 +27,32 @@
   --radius-sm: 18px;
 }
 
+[data-theme="dark"] {
+  --bg: #0f1419;
+  --bg-deep: #1a1f26;
+  --panel: rgba(26, 31, 38, 0.85);
+  --panel-strong: rgba(30, 36, 44, 0.95);
+  --ink: #e8ecf0;
+  --ink-soft: #b8c4d0;
+  --muted: #7e8c9a;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(21, 146, 201, 0.25);
+  --brand: #1592c9;
+  --brand-dark: #0d6b94;
+  --brand-bright: #2aa8dc;
+  --brand-soft: rgba(21, 146, 201, 0.18);
+  --teal: #3ba88d;
+  --teal-soft: rgba(59, 168, 141, 0.18);
+  --gold: #d9a04a;
+  --gold-soft: rgba(217, 160, 74, 0.18);
+  --slate: #8599ac;
+  --shadow-xs: 0 10px 20px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 18px 34px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 24px 46px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 38px 82px rgba(0, 0, 0, 0.5);
+  --glow: 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -1661,5 +1687,138 @@ tbody tr:hover {
   .workspace-actions-wrap button,
   .workspace-actions button {
     width: 100%;
+  }
+}
+
+/* Dark Mode Toggle */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  background: var(--panel-strong);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
+}
+
+.theme-toggle:hover {
+  background: var(--brand-soft);
+  border-color: var(--brand);
+  color: var(--brand);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Copy Button Styles */
+.copy-btn {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.copy-btn:hover {
+  background: var(--brand-soft);
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.copy-btn.copied {
+  background: var(--teal-soft);
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
+.copy-btn::before {
+  content: "📋";
+  font-size: 14px;
+}
+
+.copy-btn.copied::before {
+  content: "✓";
+}
+
+/* Print Styles */
+@media print {
+  body {
+    background: white;
+  }
+
+  body::before,
+  body::after {
+    display: none;
+  }
+
+  .theme-toggle,
+  .stepper-nav,
+  .stepper-actions,
+  .workspace-actions,
+  .service-toolbar,
+  .hero-analytics,
+  .hero-kpis,
+  .top-summary-bar,
+  .copy-btn,
+  .ghost-button,
+  .primary-button,
+  .secondary-button,
+  button {
+    display: none !important;
+  }
+
+  .page-shell {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+    page-break-after: avoid;
+  }
+
+  .panel,
+  .hero-card,
+  .hero-copy-block,
+  .quote-preview {
+    box-shadow: none;
+    background: white;
+    border: 1px solid #ddd;
+  }
+
+  .stepper-main {
+    display: none;
+  }
+
+  .result-panel {
+    display: block !important;
+  }
+
+  textarea {
+    border: 1px solid #ddd;
+    font-size: 11pt;
+  }
+
+  table {
+    page-break-inside: avoid;
+  }
+
+  .document-section {
+    page-break-inside: avoid;
   }
 }

@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="styles.css?v=20260417d">
 </head>
 <body>
+  <button class="theme-toggle" onclick="toggleDarkMode()" type="button">🌙 Dark Mode</button>
   <div class="page-shell">
     <header class="hero">
       <div class="hero-copy-block">
@@ -112,6 +113,7 @@
         <div class="workspace-actions workspace-actions-wrap">
           <button id="openQuoteLibrary" class="ghost-button" type="button">Open Saved Quotes</button>
           <button id="selectArchiveFolder" class="ghost-button" type="button">Select Version Archive Folder</button>
+          <button id="printQuote" class="ghost-button" type="button" onclick="window.printQuote && window.printQuote()">🖨️ Print</button>
           <button id="exportWord" class="ghost-button" type="button" onclick="window.exportWordQuote && window.exportWordQuote()">Export Word</button>
           <button id="exportPdf" class="ghost-button" type="button" onclick="window.exportPdfQuote && window.exportPdfQuote()">Export PDF</button>
           <input id="importJsonInput" type="file" accept=".json,application/json" hidden>

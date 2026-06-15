@@ -7733,3 +7733,79 @@ window.runQuoteVarianceReview = runQuoteVarianceReview;
 window.exportPdfQuote = exportPdf;
 window.exportWordQuote = exportWordDoc;
 window.startNewQuoteNow = startNewQuote;
+
+// ========== QUICK WINS FEATURES ==========
+
+// 1. Dark Mode Toggle
+function initDarkMode() {
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+}
+
+function toggleDarkMode() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const newTheme = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+}
+
+window.toggleDarkMode = toggleDarkMode;
+
+// 2. Print Function
+function printQuote() {
+  window.print();
+}
+
+window.printQuote = printQuote;
+
+// 3. Copy to Clipboard
+function copyToClipboard(text, buttonElement) {
+  navigator.clipboard.writeText(text).then(() => {
+    if (buttonElement) {
+      buttonElement.classList.add('copied');
+      buttonElement.textContent = 'Copied!';
+      setTimeout(() => {
+        buttonElement.classList.remove('copied');
+        buttonElement.textContent = 'Copy';
+      }, 2000);
+    }
+  }).catch(err => {
+    console.error('Failed to copy:', err);
+    alert('Failed to copy to clipboard');
+  });
+}
+
+function addCopyButtons() {
+  const textareas = document.querySelectorAll('textarea[readonly]');
+  textareas.forEach(textarea => {
+    if (textarea.id && !document.querySelector(`[data-copy-for="${textarea.id}"]`)) {
+      const wrapper = document.createElement('div');
+      wrapper.style.position = 'relative';
+
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'copy-btn';
+      copyBtn.textContent = 'Copy';
+      copyBtn.type = 'button';
+      copyBtn.setAttribute('data-copy-for', textarea.id);
+      copyBtn.style.position = 'absolute';
+      copyBtn.style.top = '8px';
+      copyBtn.style.right = '8px';
+      copyBtn.style.zIndex = '10';
+
+      copyBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        copyToClipboard(textarea.value, copyBtn);
+      });
+
+      textarea.parentNode.insertBefore(wrapper, textarea);
+      wrapper.appendChild(textarea);
+      wrapper.appendChild(copyBtn);
+    }
+  });
+}
+
+window.copyToClipboard = copyToClipboard;
+
+// Initialize dark mode and copy buttons
+initDarkMode();
+setTimeout(addCopyButtons, 500);
