@@ -8179,3 +8179,468 @@ setTimeout(() => {
   const quotes = getAllQuotesForAnalytics();
   updateAnalyticsDashboard(quotes);
 }, 1500);
+
+// ========== REMAINING QUICK WINS ==========
+
+// 4. Undo/Redo Functionality
+const historyStack = [];
+let historyIndex = -1;
+const MAX_HISTORY = 50;
+
+function saveToHistory() {
+  const currentState = captureFormState();
+
+  // Remove any future states if we're not at the end
+  if (historyIndex < historyStack.length - 1) {
+    historyStack.splice(historyIndex + 1);
+  }
+
+  // Add new state
+  historyStack.push(JSON.parse(JSON.stringify(currentState)));
+
+  // Limit history size
+  if (historyStack.length > MAX_HISTORY) {
+    historyStack.shift();
+  } else {
+    historyIndex++;
+  }
+
+  updateUndoRedoButtons();
+}
+
+function undo() {
+  if (historyIndex > 0) {
+    historyIndex--;
+    applyFormState(historyStack[historyIndex]);
+    calculate();
+    updateUndoRedoButtons();
+  }
+}
+
+function redo() {
+  if (historyIndex < historyStack.length - 1) {
+    historyIndex++;
+    applyFormState(historyStack[historyIndex]);
+    calculate();
+    updateUndoRedoButtons();
+  }
+}
+
+function updateUndoRedoButtons() {
+  const undoBtn = document.getElementById('undoBtn');
+  const redoBtn = document.getElementById('redoBtn');
+
+  if (undoBtn) undoBtn.disabled = historyIndex <= 0;
+  if (redoBtn) redoBtn.disabled = historyIndex >= historyStack.length - 1;
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+    e.preventDefault();
+    undo();
+  } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+    e.preventDefault();
+    redo();
+  }
+});
+
+// Auto-save to history on input changes
+let historyTimeout;
+function scheduleHistorySave() {
+  clearTimeout(historyTimeout);
+  historyTimeout = setTimeout(saveToHistory, 1000);
+}
+
+// 5. Currency Formatting
+let currentCurrency = localStorage.getItem('currency') || 'USD';
+
+const currencyFormats = {
+  USD: { symbol: '$', locale: 'en-US' },
+  EUR: { symbol: '€', locale: 'de-DE' },
+  GBP: { symbol: '£', locale: 'en-GB' },
+  CAD: { symbol: 'C$', locale: 'en-CA' }
+};
+
+function setCurrency(currency) {
+  currentCurrency = currency;
+  localStorage.setItem('currency', currency);
+  calculate(); // Recalculate to update all displayed values
+}
+
+function formatCurrency(amount) {
+  const format = currencyFormats[currentCurrency];
+  return new Intl.NumberFormat(format.locale, {
+    style: 'currency',
+    currency: currentCurrency,
+    maximumFractionDigits: 0
+  }).format(amount);
+}
+
+// 6. Auto-calculate Project End Dates
+function calculateProjectEndDate() {
+  const projectLength = parseInt(document.getElementById('goLiveTarget')?.value || 0);
+  const today = new Date();
+  const endDate = new Date(today.setMonth(today.getMonth() + projectLength));
+
+  const endDateEl = document.getElementById('projectEndDate');
+  if (endDateEl && projectLength > 0) {
+    endDateEl.textContent = endDate.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  } else if (endDateEl) {
+    endDateEl.textContent = 'Not set';
+  }
+}
+
+// 7. Duplicate Quote Button
+function duplicateQuote() {
+  const currentData = captureFormState();
+
+  // Update quote number and version
+  const quoteNum = currentData.quoteNumber || 'EPL-2026-001';
+  const match = quoteNum.match(/(\d+)$/);
+  if (match) {
+    const num = parseInt(match[1]) + 1;
+    currentData.quoteNumber = quoteNum.replace(/\d+$/, num.toString().padStart(3, '0'));
+  }
+  currentData.quoteVersion = 'v1';
+
+  applyFormState(currentData);
+  calculate();
+
+  alert('Quote duplicated! Update the client name and quote number as needed.');
+  saveToHistory();
+}
+
+// 8. Quote Expiration Dates
+function setDefaultExpirationDate() {
+  const expirationInput = document.getElementById('quoteExpirationDate');
+  if (expirationInput && !expirationInput.value) {
+    const today = new Date();
+    const expiration = new Date(today.setDate(today.getDate() + 30));
+    expirationInput.value = expiration.toISOString().split('T')[0];
+  }
+}
+
+function getExpirationWarning() {
+  const expirationInput = document.getElementById('quoteExpirationDate');
+  if (!expirationInput || !expirationInput.value) return '';
+
+  const expiration = new Date(expirationInput.value);
+  const today = new Date();
+  const daysRemaining = Math.ceil((expiration - today) / (1000 * 60 * 60 * 24));
+
+  if (daysRemaining < 0) {
+    return '⚠️ This quote has expired';
+  } else if (daysRemaining <= 7) {
+    return `⚠️ Expires in ${daysRemaining} days`;
+  } else {
+    return `Valid for ${daysRemaining} more days`;
+  }
+}
+
+window.undo = undo;
+window.redo = redo;
+window.setCurrency = setCurrency;
+window.calculateProjectEndDate = calculateProjectEndDate;
+window.duplicateQuote = duplicateQuote;
+window.setDefaultExpirationDate = setDefaultExpirationDate;
+
+// Initialize
+setTimeout(() => {
+  saveToHistory(); // Save initial state
+  setDefaultExpirationDate();
+  calculateProjectEndDate();
+}, 2000);
+
+// ========== SMART PRICING SUGGESTIONS ==========
+
+function findSimilarQuotes(currentQuote) {
+  const allQuotes = JSON.parse(localStorage.getItem('savedQuotes') || '[]');
+
+  if (allQuotes.length < 3) return [];
+
+  // Calculate similarity score for each quote
+  const scored = allQuotes.map(quote => {
+    let score = 0;
+
+    // Same modules (+3 points each)
+    const currentModules = currentQuote.selectedSuites || [];
+    const quoteModules = quote.selectedSuites || [];
+    currentModules.forEach(m => {
+      if (quoteModules.includes(m)) score += 3;
+    });
+
+    // Same client type (+2 points)
+    if (quote.clientType === currentQuote.clientType) score += 2;
+
+    // Similar user count (+2 points if within 25%)
+    const userDiff = Math.abs((quote.userCount || 0) - (currentQuote.userCount || 0));
+    if (userDiff < (currentQuote.userCount || 1) * 0.25) score += 2;
+
+    // Similar population (+1 point if same tier)
+    if (quote.populationTierDisplay === currentQuote.populationTierDisplay) score += 1;
+
+    // Same state (+1 point)
+    if (quote.stateName === currentQuote.stateName) score += 1;
+
+    return { quote, score };
+  });
+
+  // Return top 5 similar quotes
+  return scored
+    .filter(s => s.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5)
+    .map(s => s.quote);
+}
+
+function generatePricingSuggestions() {
+  const currentQuote = captureFormState();
+  const similarQuotes = findSimilarQuotes(currentQuote);
+
+  if (similarQuotes.length === 0) {
+    return {
+      suggestions: [],
+      warnings: [],
+      recommendations: ['Not enough historical data yet. Save more quotes to get personalized suggestions.']
+    };
+  }
+
+  const suggestions = [];
+  const warnings = [];
+  const recommendations = [];
+
+  // Calculate average metrics from similar quotes
+  const avgUsers = similarQuotes.reduce((sum, q) => sum + (q.userCount || 0), 0) / similarQuotes.length;
+  const avgProjectLength = similarQuotes.reduce((sum, q) => sum + (q.goLiveTarget || 0), 0) / similarQuotes.length;
+
+  // Check for outliers
+  const currentUsers = currentQuote.userCount || 0;
+  if (currentUsers > 0 && Math.abs(currentUsers - avgUsers) > avgUsers * 0.5) {
+    warnings.push(`⚠️ User count (${currentUsers}) is ${currentUsers > avgUsers ? 'significantly higher' : 'significantly lower'} than similar quotes (avg: ${Math.round(avgUsers)})`);
+  }
+
+  const currentLength = currentQuote.goLiveTarget || 0;
+  if (currentLength > 0 && Math.abs(currentLength - avgProjectLength) > avgProjectLength * 0.3) {
+    warnings.push(`⚠️ Project length (${currentLength} months) differs from similar quotes (avg: ${Math.round(avgProjectLength)} months)`);
+  }
+
+  // Suggest missing add-ons based on similar quotes
+  const currentAddons = currentQuote.selectedAddons || [];
+  const addonFrequency = {};
+
+  similarQuotes.forEach(q => {
+    (q.selectedAddons || []).forEach(addon => {
+      addonFrequency[addon] = (addonFrequency[addon] || 0) + 1;
+    });
+  });
+
+  Object.entries(addonFrequency).forEach(([addon, count]) => {
+    if (!currentAddons.includes(addon) && count >= similarQuotes.length * 0.6) {
+      recommendations.push(`💡 Consider adding "${addon}" - included in ${Math.round((count / similarQuotes.length) * 100)}% of similar quotes`);
+    }
+  });
+
+  // Service recommendations
+  const servicesFrequency = {
+    conversion: 0,
+    integration: 0,
+    reports: 0,
+    training: 0
+  };
+
+  similarQuotes.forEach(q => {
+    if (q.includeConversion) servicesFrequency.conversion++;
+    if (q.includeIntegration) servicesFrequency.integration++;
+    if (q.includeReports) servicesFrequency.reports++;
+    if (q.includeTraining) servicesFrequency.training++;
+  });
+
+  Object.entries(servicesFrequency).forEach(([service, count]) => {
+    const percentage = (count / similarQuotes.length) * 100;
+    const currentlyIncluded = currentQuote[`include${service.charAt(0).toUpperCase() + service.slice(1)}`];
+
+    if (!currentlyIncluded && percentage >= 60) {
+      recommendations.push(`💡 ${Math.round(percentage)}% of similar quotes include ${service} services`);
+    }
+  });
+
+  suggestions.push(`Found ${similarQuotes.length} similar quote(s) for comparison`);
+
+  return { suggestions, warnings, recommendations };
+}
+
+function showPricingSuggestions() {
+  const { suggestions, warnings, recommendations } = generatePricingSuggestions();
+
+  const container = document.getElementById('pricingSuggestionsPanel');
+  if (!container) return;
+
+  let html = '';
+
+  if (warnings.length > 0) {
+    html += '<div class="suggestions-section warnings-section">';
+    html += '<h4>Pricing Warnings</h4>';
+    html += warnings.map(w => `<p class="suggestion-item warning">${w}</p>`).join('');
+    html += '</div>';
+  }
+
+  if (recommendations.length > 0) {
+    html += '<div class="suggestions-section">';
+    html += '<h4>Recommendations</h4>';
+    html += recommendations.map(r => `<p class="suggestion-item">${r}</p>`).join('');
+    html += '</div>';
+  }
+
+  if (suggestions.length > 0) {
+    html += '<div class="suggestions-section">';
+    html += suggestions.map(s => `<p class="suggestion-item info">${s}</p>`).join('');
+    html += '</div>';
+  }
+
+  container.innerHTML = html || '<p class="mini-muted">Configure your quote to see smart suggestions</p>';
+  container.style.display = 'block';
+}
+
+window.showPricingSuggestions = showPricingSuggestions;
+
+// Auto-show suggestions when key fields change
+setTimeout(() => {
+  ['cityName', 'userCount', 'goLiveTarget'].forEach(id => {
+    document.getElementById(id)?.addEventListener('change', () => {
+      setTimeout(showPricingSuggestions, 500);
+    });
+  });
+}, 2000);
+
+// ========== QUOTE COMPARISON TOOL ==========
+
+let comparisonQuotes = [];
+
+function addQuoteToComparison(quoteId) {
+  const allQuotes = JSON.parse(localStorage.getItem('savedQuotes') || '[]');
+  const quote = allQuotes.find(q => q.id === quoteId);
+
+  if (!quote) {
+    alert('Quote not found');
+    return;
+  }
+
+  if (comparisonQuotes.find(q => q.id === quoteId)) {
+    alert('This quote is already in the comparison');
+    return;
+  }
+
+  if (comparisonQuotes.length >= 3) {
+    alert('Maximum 3 quotes can be compared at once');
+    return;
+  }
+
+  comparisonQuotes.push(quote);
+  renderQuoteComparison();
+}
+
+function removeFromComparison(quoteId) {
+  comparisonQuotes = comparisonQuotes.filter(q => q.id !== quoteId);
+  renderQuoteComparison();
+}
+
+function addCurrentQuoteToComparison() {
+  const currentQuote = captureFormState();
+  currentQuote.id = 'current';
+  currentQuote.quoteNumber = currentQuote.quoteNumber || 'Current Quote';
+
+  if (comparisonQuotes.find(q => q.id === 'current')) {
+    comparisonQuotes = comparisonQuotes.filter(q => q.id !== 'current');
+  }
+
+  if (comparisonQuotes.length >= 3) {
+    alert('Maximum 3 quotes can be compared. Remove one first.');
+    return;
+  }
+
+  comparisonQuotes.push(currentQuote);
+  renderQuoteComparison();
+}
+
+function renderQuoteComparison() {
+  const container = document.getElementById('quoteComparisonGrid');
+  if (!container) return;
+
+  if (comparisonQuotes.length === 0) {
+    container.innerHTML = '<p class="mini-muted">Select quotes to compare side-by-side</p>';
+    return;
+  }
+
+  const fields = [
+    { key: 'quoteNumber', label: 'Quote Number' },
+    { key: 'cityName', label: 'Client' },
+    { key: 'stateName', label: 'State' },
+    { key: 'clientType', label: 'Type' },
+    { key: 'userCount', label: 'Users' },
+    { key: 'populationValue', label: 'Population' },
+    { key: 'goLiveTarget', label: 'Project Length' },
+    { key: 'serviceDeliveryModel', label: 'Delivery Model' },
+    { key: 'selectedSuites', label: 'Modules', isArray: true },
+    { key: 'selectedAddons', label: 'Add-Ons', isArray: true }
+  ];
+
+  let html = '<table class="comparison-table"><thead><tr><th>Field</th>';
+  comparisonQuotes.forEach(q => {
+    html += `<th>${q.quoteNumber || 'Unnamed'}<br><button class="ghost-button" onclick="removeFromComparison('${q.id}')">Remove</button></th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  fields.forEach(field => {
+    html += `<tr><td><strong>${field.label}</strong></td>`;
+
+    const values = comparisonQuotes.map(q => {
+      const val = q[field.key];
+      if (field.isArray) {
+        return val && val.length > 0 ? val.join(', ') : 'None';
+      }
+      return val || 'Not set';
+    });
+
+    // Check if values differ
+    const allSame = values.every(v => v === values[0]);
+
+    values.forEach(val => {
+      const diffClass = allSame ? '' : 'diff-highlight';
+      html += `<td class="${diffClass}">${val}</td>`;
+    });
+
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function openComparisonModal() {
+  const modal = document.getElementById('quoteComparisonModal');
+  if (modal) {
+    modal.classList.remove('hidden-step');
+    modal.removeAttribute('hidden');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+}
+
+function closeComparisonModal() {
+  const modal = document.getElementById('quoteComparisonModal');
+  if (modal) {
+    modal.classList.add('hidden-step');
+    modal.setAttribute('hidden', '');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+}
+
+window.addQuoteToComparison = addQuoteToComparison;
+window.removeFromComparison = removeFromComparison;
+window.addCurrentQuoteToComparison = addCurrentQuoteToComparison;
+window.openComparisonModal = openComparisonModal;
+window.closeComparisonModal = closeComparisonModal;

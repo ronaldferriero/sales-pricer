@@ -7,7 +7,19 @@
   <link rel="stylesheet" href="styles.css?v=20260417d">
 </head>
 <body>
-  <button class="theme-toggle" onclick="toggleDarkMode()" type="button">🌙 Dark Mode</button>
+  <div class="top-toolbar">
+    <button class="theme-toggle" onclick="toggleDarkMode()" type="button">🌙 Dark Mode</button>
+    <div class="toolbar-group">
+      <button id="undoBtn" class="toolbar-btn" onclick="window.undo && window.undo()" type="button" title="Undo (Ctrl+Z)">↶ Undo</button>
+      <button id="redoBtn" class="toolbar-btn" onclick="window.redo && window.redo()" type="button" title="Redo (Ctrl+Y)">↷ Redo</button>
+    </div>
+    <select class="currency-selector" onchange="window.setCurrency && window.setCurrency(this.value)">
+      <option value="USD">USD ($)</option>
+      <option value="EUR">EUR (€)</option>
+      <option value="GBP">GBP (£)</option>
+      <option value="CAD">CAD (C$)</option>
+    </select>
+  </div>
   <div class="page-shell">
     <header class="hero">
       <div class="hero-copy-block">
@@ -128,6 +140,7 @@
         <p class="workspace-user-help">Enter your name before using Save or Save As.</p>
         <div class="workspace-actions">
           <button id="newQuote" class="ghost-button" type="button" onclick="window.startNewQuoteNow && window.startNewQuoteNow()">New Quote</button>
+          <button id="duplicateQuote" class="ghost-button" type="button" onclick="window.duplicateQuote && window.duplicateQuote()">📋 Duplicate</button>
           <button id="saveQuote" class="primary-button" type="button" disabled>Save Quote</button>
           <button id="saveAsQuote" class="secondary-button" type="button" disabled>Save As</button>
           <button id="saveTemplate" class="ghost-button" type="button" onclick="window.saveAsTemplate && window.saveAsTemplate()">💾 Save as Template</button>
@@ -145,8 +158,16 @@
           <p class="workspace-user-help">My Templates:</p>
           <div id="templatesList" class="templates-list"></div>
         </div>
+        <div class="workspace-suggestions">
+          <div class="section-title-row">
+            <p class="workspace-user-help">Smart Pricing Suggestions:</p>
+            <button class="ghost-button" type="button" onclick="window.showPricingSuggestions && window.showPricingSuggestions()">Refresh</button>
+          </div>
+          <div id="pricingSuggestionsPanel" class="suggestions-panel"></div>
+        </div>
         <div class="workspace-actions workspace-actions-wrap">
           <button id="openQuoteLibrary" class="ghost-button" type="button">Open Saved Quotes</button>
+          <button id="compareQuotes" class="secondary-button" type="button" onclick="window.openComparisonModal && window.openComparisonModal()">⚖️ Compare Quotes</button>
           <button id="selectArchiveFolder" class="ghost-button" type="button">Select Version Archive Folder</button>
           <button id="shareQuote" class="secondary-button" type="button" onclick="window.generateShareableLink && window.generateShareableLink()">🔗 Share Link</button>
           <button id="emailQuote" class="secondary-button" type="button" onclick="window.exportToEmail && window.exportToEmail()">📧 Email Quote</button>
@@ -296,7 +317,16 @@
               </label>
               <label class="field">
                 <span>Project Length (Months)</span>
-                <input id="goLiveTarget" type="number" min="0" value="0" placeholder="12">
+                <input id="goLiveTarget" type="number" min="0" value="0" placeholder="12" onchange="window.calculateProjectEndDate && window.calculateProjectEndDate()">
+              </label>
+              <label class="field">
+                <span>Expected Completion Date</span>
+                <input id="projectEndDate" type="text" value="Not set" readonly>
+              </label>
+              <label class="field">
+                <span>Quote Expiration Date</span>
+                <input id="quoteExpirationDate" type="date">
+                <small class="field-help" id="expirationWarning"></small>
               </label>
               <label class="field">
                 <span>Derived Population Tier</span>
@@ -1046,6 +1076,24 @@
         </div>
       </section>
     </main>
+  </div>
+
+  <div id="quoteComparisonModal" class="library-modal hidden-step" aria-hidden="true" hidden>
+    <div class="library-backdrop" onclick="window.closeComparisonModal && window.closeComparisonModal()"></div>
+    <div class="library-panel">
+      <div class="library-head">
+        <div>
+          <p class="section-kicker">Quote Comparison</p>
+          <h3>Compare Quotes Side-by-Side</h3>
+          <p class="library-copy">Add up to 3 quotes to compare their details and spot differences.</p>
+        </div>
+        <button class="ghost-button" type="button" onclick="window.closeComparisonModal && window.closeComparisonModal()">Close</button>
+      </div>
+      <div class="service-toolbar">
+        <button class="secondary-button" type="button" onclick="window.addCurrentQuoteToComparison && window.addCurrentQuoteToComparison()">Add Current Quote</button>
+      </div>
+      <div id="quoteComparisonGrid" class="comparison-grid"></div>
+    </div>
   </div>
 
   <div id="quoteLibraryModal" class="library-modal hidden-step" aria-hidden="true" hidden>

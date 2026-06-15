@@ -1690,12 +1690,20 @@ tbody tr:hover {
   }
 }
 
-/* Dark Mode Toggle */
-.theme-toggle {
+/* Top Toolbar */
+.top-toolbar {
   position: fixed;
   top: 20px;
   right: 20px;
   z-index: 1000;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.theme-toggle,
+.toolbar-btn,
+.currency-selector {
   background: var(--panel-strong);
   border: 1px solid var(--line);
   border-radius: 24px;
@@ -1709,12 +1717,29 @@ tbody tr:hover {
   transition: all 0.2s ease;
 }
 
-.theme-toggle:hover {
+.theme-toggle:hover,
+.toolbar-btn:hover:not(:disabled),
+.currency-selector:hover {
   background: var(--brand-soft);
   border-color: var(--brand);
   color: var(--brand);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
+}
+
+.toolbar-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.toolbar-group {
+  display: flex;
+  gap: 8px;
+}
+
+.currency-selector {
+  padding: 8px 12px;
+  cursor: pointer;
 }
 
 /* Copy Button Styles */
@@ -1816,6 +1841,94 @@ tbody tr:hover {
   text-align: right;
   color: var(--ink-soft);
   font-weight: 600;
+}
+
+/* Smart Pricing Suggestions */
+.workspace-suggestions {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.suggestions-panel {
+  margin-top: 12px;
+}
+
+.suggestions-section {
+  margin-bottom: 16px;
+}
+
+.suggestions-section h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin: 0 0 8px 0;
+}
+
+.suggestion-item {
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.suggestion-item.warning {
+  background: rgba(203, 138, 45, 0.1);
+  border-left: 3px solid var(--gold);
+  color: var(--ink);
+}
+
+.suggestion-item.info {
+  background: var(--brand-soft);
+  border-left: 3px solid var(--brand);
+  color: var(--ink);
+}
+
+.suggestion-item:not(.warning):not(.info) {
+  background: var(--panel);
+  border-left: 3px solid var(--teal);
+  color: var(--ink);
+}
+
+/* Quote Comparison */
+.comparison-grid {
+  margin-top: 16px;
+  overflow-x: auto;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.comparison-table th,
+.comparison-table td {
+  padding: 12px;
+  text-align: left;
+  border: 1px solid var(--line);
+}
+
+.comparison-table th {
+  background: var(--brand-soft);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.comparison-table tr:nth-child(even) {
+  background: var(--panel);
+}
+
+.comparison-table .diff-highlight {
+  background: rgba(203, 138, 45, 0.15);
+  font-weight: 600;
+}
+
+.comparison-table button {
+  margin-top: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
 }
 
 /* Templates & Presets Styles */
