@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EPL Sales Pricer</title>
+  <link rel="stylesheet" href="styles.css?v=20260417d">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="hero-copy-block">
+        <p class="eyebrow">Tyler Technologies</p>
+        <h1>EPL Sales Pricer</h1>
+        <p class="hero-copy">
+          Build a cleaner services quote with guided scoping, pricing inputs, quote review, and polished output notes in one place.
+        </p>
+        <div class="hero-kpis">
+          <article class="hero-kpi">
+            <span>Scoped Services</span>
+            <strong id="heroScopedServices">0</strong>
+          </article>
+          <article class="hero-kpi">
+            <span>Modules Selected</span>
+            <strong id="heroModulesSelected">0</strong>
+          </article>
+          <article class="hero-kpi">
+            <span>Add-Ons Selected</span>
+            <strong id="heroAddonsSelected">0</strong>
+          </article>
+          <article class="hero-kpi">
+            <span>Saved Quotes</span>
+            <strong id="heroSavedQuotes">0</strong>
+          </article>
+        </div>
+        <div class="hero-analytics">
+          <div class="analytics-card">
+            <div class="analytics-head">
+              <h3>Quote Mix</h3>
+              <small>Saved quotes by type</small>
+            </div>
+            <div class="analytics-stat-grid">
+              <div class="analytics-stat">
+                <span>Project Quotes</span>
+                <strong id="analyticsProjectQuotes">0</strong>
+              </div>
+              <div class="analytics-stat">
+                <span>Add-On Quotes</span>
+                <strong id="analyticsAddonQuotes">0</strong>
+              </div>
+            </div>
+            <div class="mini-chart">
+              <div class="mini-chart-row">
+                <span>Projects</span>
+                <div class="mini-chart-track"><div id="chartProjectsBar" class="mini-chart-fill mini-chart-fill-brand"></div></div>
+                <strong id="chartProjectsValue">0</strong>
+              </div>
+              <div class="mini-chart-row">
+                <span>Add-Ons</span>
+                <div class="mini-chart-track"><div id="chartAddonsBar" class="mini-chart-fill mini-chart-fill-teal"></div></div>
+                <strong id="chartAddonsValue">0</strong>
+              </div>
+            </div>
+          </div>
+          <div class="analytics-card">
+            <div class="analytics-head">
+              <h3>YTD Performance</h3>
+              <small>Current year compared to prior year</small>
+            </div>
+            <div class="analytics-stat-grid">
+              <div class="analytics-stat">
+                <span>YTD Quotes</span>
+                <strong id="analyticsYtdQuotes">0</strong>
+              </div>
+              <div class="analytics-stat">
+                <span>YoY Change</span>
+                <strong id="analyticsYoyChange">0%</strong>
+              </div>
+            </div>
+            <div class="mini-chart">
+              <div class="mini-chart-row">
+                <span id="chartPriorYearLabel">Prior Year</span>
+                <div class="mini-chart-track"><div id="chartPriorYearBar" class="mini-chart-fill mini-chart-fill-slate"></div></div>
+                <strong id="chartPriorYearValue">0</strong>
+              </div>
+              <div class="mini-chart-row">
+                <span id="chartCurrentYearLabel">Current Year</span>
+                <div class="mini-chart-track"><div id="chartCurrentYearBar" class="mini-chart-fill mini-chart-fill-gold"></div></div>
+                <strong id="chartCurrentYearValue">0</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-card">
+        <p class="hero-stat-label">Workspace</p>
+        <p id="workspaceCustomer" class="hero-stat-value">No customer entered</p>
+        <p id="workspaceSalesRep" class="hero-stat-detail">Sales Rep: Not entered</p>
+        <p id="workspaceUsers" class="hero-stat-detail">Users: 0</p>
+        <p id="workspaceModules" class="hero-stat-detail">Modules Purchased: None selected</p>
+        <label class="field workspace-user-field">
+          <span>Current User (Required)</span>
+          <input id="currentUser" type="text" placeholder="Required before saving">
+        </label>
+        <p class="workspace-user-help">Enter your name before using Save or Save As.</p>
+        <div class="workspace-actions">
+          <button id="newQuote" class="ghost-button" type="button" onclick="window.startNewQuoteNow && window.startNewQuoteNow()">New Quote</button>
+          <button id="saveQuote" class="primary-button" type="button" disabled>Save Quote</button>
+          <button id="saveAsQuote" class="secondary-button" type="button" disabled>Save As</button>
+          <p id="saveStatus" class="workspace-status">Saved quotes stay available in this browser after you reopen the page.</p>
+        </div>
+        <div class="workspace-actions workspace-actions-wrap">
+          <button id="openQuoteLibrary" class="ghost-button" type="button">Open Saved Quotes</button>
+          <button id="selectArchiveFolder" class="ghost-button" type="button">Select Version Archive Folder</button>
+          <button id="exportWord" class="ghost-button" type="button" onclick="window.exportWordQuote && window.exportWordQuote()">Export Word</button>
+          <button id="exportPdf" class="ghost-button" type="button" onclick="window.exportPdfQuote && window.exportPdfQuote()">Export PDF</button>
+          <input id="importJsonInput" type="file" accept=".json,application/json" hidden>
+        </div>
+        <p id="archiveFolderStatus" class="workspace-user-help">Version archive folder: Not selected. Saved versions will stay in browser history only.</p>
+      </div>
+    </header>
+
+    <main class="stepper-shell">
+      <aside class="stepper-nav panel">
+        <p class="section-kicker">Progress</p>
+        <div class="step-list">
+          <button class="step-link active" type="button" data-step-key="client">
+            <span class="step-index">1</span>
+            <span class="step-text">Client Profile</span>
+          </button>
+          <button class="step-link" type="button" data-step-key="modules">
+            <span class="step-index">2</span>
+            <span class="step-text">Module Scope</span>
+          </button>
+          <button class="step-link hidden-step" type="button" data-step-key="delivery">
+            <span class="step-index">3</span>
+            <span class="step-text">Conversions, Reports & Integrations</span>
+          </button>
+          <button class="step-link hidden-step" type="button" data-step-key="sales-quote">
+            <span class="step-index">4</span>
+            <span class="step-text">Sales Quote Entry</span>
+          </button>
+          <button class="step-link" type="button" data-step-key="addons">
+            <span class="step-index">5</span>
+            <span class="step-text">Add-On Scope</span>
+          </button>
+        </div>
+
+        <div class="stepper-mini-summary">
+          <p class="section-kicker">Snapshot</p>
+          <p id="navCityName" class="mini-primary">No city entered</p>
+          <p id="navModules" class="mini-muted">No modules selected</p>
+          <p id="navAddons" class="mini-muted">No add-ons selected</p>
+        </div>
+      </aside>
+
+      <section class="panel stepper-main">
+        <div class="top-summary-bar">
+          <article class="top-summary-card">
+            <span>Base Scope Value</span>
+            <strong id="topTotalValue">$0</strong>
+          </article>
+          <article class="top-summary-card">
+            <span>Base Scope Hours</span>
+            <strong id="topTotalHours">0</strong>
+          </article>
+          <article class="top-summary-card">
+            <span>IC Hours</span>
+            <strong id="topIcHours">0</strong>
+          </article>
+          <article class="top-summary-card">
+            <span>PM Hours</span>
+            <strong id="topPmHours">0</strong>
+          </article>
+        </div>
+
+        <div class="panel-heading">
+          <span class="section-kicker">Guided Intake</span>
+          <h2 id="activeStepTitle">Client Information</h2>
+          <p id="activeStepDescription">Start with the city or county and basic opportunity details.</p>
+        </div>
+
+        <div class="step-panels">
+          <section class="step-panel active" data-step-key="client">
+            <select id="quoteType" hidden aria-hidden="true" tabindex="-1">
+              <option value="full-implementation">Full Implementation Project</option>
+              <option value="addon-only">Add-On Only</option>
+            </select>
+            <div class="selection-block">
+              <h3>Delivery Approach</h3>
+              <div class="field-grid">
+                <label class="field">
+                  <span>Service Delivery Model</span>
+                  <select id="serviceDeliveryModel">
+                    <option value="shared">Shared</option>
+                    <option value="full">Full Services (100% Tyler / 0% Client)</option>
+                    <option value="apollo">Apollo</option>
+                    <option value="addon-work">Add On Work</option>
+                  </select>
+                </label>
+                <label class="field conditional-block" id="sharedServicesBreakdownField">
+                  <span>Shared Services Breakdown</span>
+                  <select id="sharedServicesBreakdown">
+                    <option value="85-15">85% Client / 15% Tyler</option>
+                    <option value="70-30">70% Client / 30% Tyler</option>
+                    <option value="60-40">60% Client / 40% Tyler</option>
+                    <option value="50-50">50% Client / 50% Tyler</option>
+                    <option value="40-60">40% Client / 60% Tyler</option>
+                    <option value="30-70">30% Client / 70% Tyler</option>
+                    <option value="15-85">15% Client / 85% Tyler</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+            <div class="field-grid">
+              <label class="field">
+                <span>Quote Number</span>
+                <input id="quoteNumber" type="text" placeholder="EPL-2026-001">
+              </label>
+              <label class="field">
+                <span>Quote Version</span>
+                <input id="quoteVersion" type="text" value="v1" readonly>
+                <small class="field-help">New quotes start at v1. Versions update automatically when saved.</small>
+              </label>
+              <label class="field">
+                <span>Client Name (Required)</span>
+                <input id="cityName" type="text" placeholder="City of Example">
+                <small class="field-help">Enter the client name before saving.</small>
+              </label>
+              <label class="field">
+                <span>State</span>
+                <input id="stateName" type="text" maxlength="2" placeholder="TX">
+              </label>
+              <label class="field">
+                <span>Entity Type</span>
+                <select id="clientType">
+                  <option value="city">City</option>
+                  <option value="county">County</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Sales Resource</span>
+                <input id="salesRep" type="text" placeholder="Jane Smith">
+              </label>
+              <label class="field">
+                <span>Departments</span>
+                <input id="departments" type="text" placeholder="Planning, Permitting, Code Enforcement">
+              </label>
+              <label class="field">
+                <span>Number of Users</span>
+                <input id="userCount" type="number" min="0" value="0">
+              </label>
+              <label class="field">
+                <span>Population</span>
+                <input id="populationValue" type="number" min="0" value="0" placeholder="Enter population">
+              </label>
+              <label class="field">
+                <span>Project Length (Months)</span>
+                <input id="goLiveTarget" type="number" min="0" value="0" placeholder="12">
+              </label>
+              <label class="field">
+                <span>Derived Population Tier</span>
+                <input id="populationTierDisplay" type="text" value="Tier A" readonly>
+              </label>
+            </div>
+
+            <div class="selection-block">
+              <label class="checkbox-option">
+                <input id="useSalesQuoteEntry" type="checkbox">
+                <span>Already Quoted And Need Notes</span>
+              </label>
+            </div>
+
+            <div class="selection-block quote-type-callout" id="quoteTypeCallout">
+              <h3>Full Implementation Project</h3>
+              <p>This path is for a broader EPL engagement with modules, implementation planning, add-ons, and conversion review.</p>
+            </div>
+          </section>
+
+          <section class="step-panel" data-step-key="modules">
+            <div class="selection-block">
+              <div class="section-title-row">
+                <h3>Modules / Suites</h3>
+                <button id="selectAllSuites" class="ghost-button" type="button">Select All</button>
+              </div>
+              <p class="group-copy">Select at least one module or suite to continue.</p>
+              <div id="suiteOptions" class="checkbox-grid"></div>
+              <p id="suiteRequirementMessage" class="field-help hidden-step">Select at least one module or suite.</p>
+            </div>
+
+            <div class="selection-block">
+              <h3>Services in Scope</h3>
+              <div class="toggle-grid">
+                <label class="toggle-card">
+                  <input id="includeImplementation" type="checkbox" checked>
+                  <span>Implementation</span>
+                </label>
+                <label class="toggle-card">
+                  <input id="includeTraining" type="checkbox" checked>
+                  <span>Training</span>
+                </label>
+                <label class="toggle-card">
+                  <input id="includeConversion" type="checkbox" checked>
+                  <span>Data Conversion</span>
+                </label>
+                <label class="toggle-card">
+                  <input id="includeIntegration" type="checkbox" checked>
+                  <span>Integration Services</span>
+                </label>
+                <label class="toggle-card">
+                  <input id="includeReports" type="checkbox" checked>
+                  <span>Reporting Services</span>
+                </label>
+                <label class="toggle-card">
+                  <input id="includeTravel" type="checkbox" checked>
+                  <span>Travel / Onsite Support</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="selection-block">
+              <h3>Process Counts</h3>
+              <div class="field-grid">
+                <label class="field">
+                  <span>Tyler Owned Custom Processes</span>
+                  <input id="tylerOwnedProcesses" type="number" min="0" value="0">
+                </label>
+                <label class="field">
+                  <span>Client Owned Custom Processes</span>
+                  <input id="clientOwnedProcesses" type="number" min="0" value="0">
+                </label>
+                <label class="field">
+                  <span>Tyler Owned Templated Processes</span>
+                  <input id="tylerOwnedTemplatedProcesses" type="number" min="0" value="0">
+                </label>
+                <label class="field">
+                  <span>Client Owned Templated Processes</span>
+                  <input id="clientOwnedTemplatedProcesses" type="number" min="0" value="0">
+                </label>
+                <label class="field">
+                  <span>AI Product Tools Hours</span>
+                  <input id="aiProductToolsHours" type="number" min="0" value="0">
+                </label>
+              </div>
+              <label class="checkbox-option">
+                <input id="includeFixedFeeUplift" type="checkbox">
+                <span>Fixed Fee (+20% Hours)</span>
+              </label>
+            </div>
+
+            <div class="selection-block conditional-block" id="trainingSupportBlock">
+              <h3>Training & Production Support</h3>
+              <p class="group-copy">Full implementations default Solution Orientation, Solution Validation, and End User Training, but all training hour fields can be overridden here. EUT defaults to 40 hours through 30 users, then adds 40 hours for each additional 30 users over 30.</p>
+              <div class="field-grid">
+                <label class="field">
+                  <span>Solution Orientation Hours</span>
+                  <input id="solutionOrientationHours" type="number" min="0" value="40">
+                </label>
+                <label class="field">
+                  <span>Solution Validation Hours</span>
+                  <input id="solutionValidationHours" type="number" min="0" value="40">
+                </label>
+                <label class="field">
+                  <span>Configuration Training Hours</span>
+                  <input id="configurationTrainingHours" type="number" min="0" value="0">
+                </label>
+                <label class="field">
+                  <span>End User Training Hours</span>
+                  <input id="endUserTrainingHours" type="number" min="0" value="0">
+                </label>
+                <label class="field">
+                  <span>Production Support Hours</span>
+                  <input id="productionSupportHours" type="number" min="0" value="0">
+                </label>
+              </div>
+              <label class="checkbox-option training-option">
+                <input id="includeTrainTheTrainer" type="checkbox">
+                <span>Use Train the Trainer Instead of EUT</span>
+              </label>
+              <label class="checkbox-option training-option">
+                <input id="includeSystemAdminTraining" type="checkbox">
+                <span>Include System Administrator Training</span>
+              </label>
+              <label class="checkbox-option training-option">
+                <input id="includeChangeManagement" type="checkbox">
+                <span>Include Change Management Notes</span>
+              </label>
+            </div>
+          </section>
+
+          <section class="step-panel" data-step-key="delivery">
+            <div class="selection-block conditional-block service-group service-group-integration" id="integrationBlock">
+              <p class="group-kicker">Service Group</p>
+              <h3>Integration Scope</h3>
+              <p class="group-copy">Capture priced integration work, expected ownership, and the technical delivery notes that support the quote.</p>
+              <div class="field-grid">
+                <label class="field">
+                  <span>Integration Support Hours</span>
+                  <input id="integrationSupportPrice" type="number" min="0" value="0">
+                </label>
+                <label class="field">
+                  <span>Integration Development Hours</span>
+                  <input id="integrationDevelopmentPrice" type="number" min="0" value="0">
+                </label>
+              </div>
+              <label class="field">
+                <span>Integration Requirements</span>
+                <textarea id="integrationNotes" placeholder="Capture integrated systems, ownership, endpoints, data exchange expectations, middleware, and testing notes."></textarea>
+              </label>
+            </div>
+
+            <div class="selection-block conditional-block service-group service-group-reports" id="reportsBlock">
+              <p class="group-kicker">Service Group</p>
+              <h3>Reporting Scope</h3>
+              <p class="group-copy">Separate custom forms, custom reports, and hourly report work so reporting services are easy to review.</p>
+              <div class="field-grid">
+                <label class="field">
+                  <span>Number of Custom Forms / Documents</span>
+                  <input id="customFormsCount" type="number" min="0" value="0">
+                </label>
+                <label class="field">
+                  <span>Number of Custom Reports</span>
+                  <input id="customReportsCount" type="number" min="0" value="0">
+                </label>
+                <label class="field">
+                  <span>Report Hours</span>
+                  <input id="reportHours" type="number" min="0" value="0">
+                </label>
+              </div>
+              <label class="field">
+                <span>Reporting Requirements</span>
+                <textarea id="reportsNotes" placeholder="Capture report count, dashboards, custom reporting needs, and any known validation expectations."></textarea>
+              </label>
+            </div>
+
+            <div class="selection-block conditional-block service-group service-group-conversion" id="conversionBlock">
+              <p class="group-kicker">Service Group</p>
+              <h3>Conversion Scope</h3>
+              <p class="group-copy">Define the conversion approach, source counts, and priced modules so the quote clearly separates conversion services.</p>
+              <div class="field-grid">
+                <label class="field">
+                  <span>Conversion Type</span>
+                  <select id="conversionScopeType">
+                    <option value="full">Full</option>
+                    <option value="dct">DCT</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>Conversion Pricing Model</span>
+                  <select id="conversionModel">
+                    <option value="epl-current-to-epl">Current EERP / EPL to EPL (up to 10 years)</option>
+                    <option value="energov">EnerGov Current Pricing</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>Derived Tier</span>
+                  <input id="conversionTierReadout" type="text" value="Tier A" readonly>
+                </label>
+              </div>
+
+              <div class="selection-block">
+                <div class="section-title-row">
+                  <h3>Sources Per Module</h3>
+                  <button id="fillSourcesOne" class="ghost-button" type="button">Set All to 1</button>
+                </div>
+                <div class="source-grid">
+                  <label class="field">
+                    <span>Community Development Sources</span>
+                    <input id="sourcesCommunityDevelopment" type="number" min="0" value="0">
+                  </label>
+                  <label class="field">
+                    <span>Business Management Sources</span>
+                    <input id="sourcesBusinessManagement" type="number" min="0" value="0">
+                  </label>
+                  <label class="field">
+                    <span>Environmental Health Sources</span>
+                    <input id="sourcesEnvironmentalHealth" type="number" min="0" value="0">
+                  </label>
+                </div>
+              </div>
+
+              <div class="selection-block">
+                <label class="checkbox-option">
+                  <input id="includeDataArchive" type="checkbox">
+                  <span>Include Data Archive</span>
+                </label>
+                <label class="checkbox-option">
+                  <input id="includeTcmConversion" type="checkbox">
+                  <span>Include TCM Conversion</span>
+                </label>
+              </div>
+
+              <div class="conversion-summary">
+                <article class="metric-card">
+                  <span>Conversion Fixed Fee</span>
+                  <strong id="conversionBasePrice">$0</strong>
+                  <small id="conversionSelectedModules">No modules selected</small>
+                </article>
+                <article class="metric-card">
+                  <span>Hosting Fee</span>
+                  <strong id="conversionHostingPrice">$0</strong>
+                  <small id="conversionHostingLabel">Not included</small>
+                </article>
+                <article class="metric-card accent">
+                  <span>Conversion Price</span>
+                  <strong id="conversionTotalPrice">$0</strong>
+                  <small id="conversionSourceSummary">Fixed-fee conversion quote based on selected modules and sources</small>
+                </article>
+              </div>
+
+              <div class="selection-block">
+                <h3>Conversion Notes</h3>
+                <textarea id="conversionSummary" readonly></textarea>
+              </div>
+            </div>
+          </section>
+
+          <section class="step-panel" data-step-key="sales-quote">
+            <div class="selection-block sales-quote-entry-block">
+              <div class="review-card-head">
+                <strong>Sales Quote Entry</strong>
+                <span>Enter the quoted hours, source counts, and report quantities in the same service-line format as the sales quote. These inputs feed the normal pricing logic and refresh the notes automatically.</span>
+              </div>
+              <p class="sales-quote-helper">Rows tied to direct quote hours, counts, or overrides will update the live quote immediately. Leave process counts blank if you want the app to estimate custom-process counts from Implementation Consultant hours using the selected Tyler/client split.</p>
+              <div class="field-grid">
+                <label class="field">
+                  <span>Service Delivery Model</span>
+                  <select id="salesQuoteServiceDeliveryModel">
+                    <option value="shared">Shared</option>
+                    <option value="full">Full Services (100% Tyler / 0% Client)</option>
+                    <option value="apollo">Apollo</option>
+                    <option value="addon-work">Add On Work</option>
+                  </select>
+                </label>
+                <label class="field" id="salesQuoteSharedBreakdownField">
+                  <span>Client / Tyler Split</span>
+                  <select id="salesQuoteSharedServicesBreakdown">
+                    <option value="85-15">85% Client / 15% Tyler</option>
+                    <option value="70-30">70% Client / 30% Tyler</option>
+                    <option value="60-40">60% Client / 40% Tyler</option>
+                    <option value="50-50">50% Client / 50% Tyler</option>
+                    <option value="40-60">40% Client / 60% Tyler</option>
+                    <option value="30-70">30% Client / 70% Tyler</option>
+                    <option value="15-85">15% Client / 85% Tyler</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>Tyler Owned Custom Processes</span>
+                  <input id="salesQuoteTylerOwnedProcesses" class="sales-quote-input" type="number" min="0" value="0">
+                </label>
+                <label class="field">
+                  <span>Client Owned Custom Processes</span>
+                  <input id="salesQuoteClientOwnedProcesses" class="sales-quote-input" type="number" min="0" value="0">
+                </label>
+                <label class="field">
+                  <span>Tyler Owned Templated Processes</span>
+                  <input id="salesQuoteTylerOwnedTemplatedProcesses" class="sales-quote-input" type="number" min="0" value="0">
+                </label>
+                <label class="field">
+                  <span>Client Owned Templated Processes</span>
+                  <input id="salesQuoteClientOwnedTemplatedProcesses" class="sales-quote-input" type="number" min="0" value="0">
+                </label>
+              </div>
+              <div class="service-toolbar">
+                <button id="applySalesQuoteEntry" class="secondary-button" type="button" onclick="window.applySalesQuoteEntryNow && window.applySalesQuoteEntryNow()">Update Pricing & Notes</button>
+              </div>
+              <div class="table-shell sales-quote-table-shell">
+                <table class="sales-quote-entry-table">
+                  <thead>
+                    <tr>
+                      <th>Service</th>
+                      <th>Hours / Qty</th>
+                      <th>Rate Basis</th>
+                      <th>Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Implementation Consultant</td>
+                      <td><input id="salesQuoteImplementationHours" class="sales-quote-input" type="number" min="0" value="0"></td>
+                      <td id="salesQuoteImplementationRate">$225/hour</td>
+                      <td id="salesQuoteImplementationValue">$0</td>
+                    </tr>
+                    <tr>
+                      <td>Conversion Fixed Fee - Community Development</td>
+                      <td><input id="salesQuoteCommunitySources" class="sales-quote-input" type="number" min="0" value="0"></td>
+                      <td id="salesQuoteCommunityRate">0 Community Development sources</td>
+                      <td id="salesQuoteCommunityValue">$0</td>
+                    </tr>
+                    <tr>
+                      <td>Conversion Fixed Fee - Business Management</td>
+                      <td><input id="salesQuoteBusinessSources" class="sales-quote-input" type="number" min="0" value="0"></td>
+                      <td id="salesQuoteBusinessRate">0 Business Management sources</td>
+                      <td id="salesQuoteBusinessValue">$0</td>
+                    </tr>
+                    <tr>
+                      <td>Conversion Fixed Fee - Environmental Health</td>
+                      <td><input id="salesQuoteEnvironmentalSources" class="sales-quote-input" type="number" min="0" value="0"></td>
+                      <td id="salesQuoteEnvironmentalRate">0 Environmental Health sources</td>
+                      <td id="salesQuoteEnvironmentalValue">$0</td>
+                    </tr>
+                    <tr>
+                      <td>Custom Forms / Documents</td>
+                      <td><input id="salesQuoteCustomFormsCount" class="sales-quote-input" type="number" min="0" value="0"></td>
+                      <td id="salesQuoteCustomFormsRate">0 x $3,000</td>
+                      <td id="salesQuoteCustomFormsValue">$0</td>
+                    </tr>
+                    <tr>
+                      <td>Custom Reports</td>
+                      <td><input id="salesQuoteCustomReportsCount" class="sales-quote-input" type="number" min="0" value="0"></td>
+                      <td id="salesQuoteCustomReportsRate">0 x $5,000</td>
+                      <td id="salesQuoteCustomReportsValue">$0</td>
+                    </tr>
+                    <tr>
+                      <td>Reporting Services</td>
+                      <td><input id="salesQuoteReportHours" class="sales-quote-input" type="number" min="0" value="0"></td>
+                      <td id="salesQuoteReportHoursRate">$250/hour</td>
+                      <td id="salesQuoteReportHoursValue">$0</td>
+                    </tr>
+                    <tr>
+                      <td>Integration Support</td>
+                      <td><input id="salesQuoteIntegrationSupportHours" class="sales-quote-input" type="number" min="0" value="0"></td>
+                      <td id="salesQuoteIntegrationSupportRate">$250/hour</td>
+                      <td id="salesQuoteIntegrationSupportValue">$0</td>
+                    </tr>
+                    <tr>
+                      <td>Integration Development</td>
+                      <td><input id="salesQuoteIntegrationDevelopmentHours" class="sales-quote-input" type="number" min="0" value="0"></td>
+                      <td id="salesQuoteIntegrationDevelopmentRate">$250/hour</td>
+                      <td id="salesQuoteIntegrationDevelopmentValue">$0</td>
+                    </tr>
+                    <tr>
+                      <td>Configuration Training</td>
+                      <td><input id="salesQuoteConfigurationTrainingHours" class="sales-quote-input" type="number" min="0" value="0"></td>
+                      <td id="salesQuoteConfigurationTrainingRate">$225/hour</td>
+                      <td id="salesQuoteConfigurationTrainingValue">$0</td>
+                    </tr>
+                    <tr>
+                      <td>System Administrator Training</td>
+                      <td><input id="salesQuoteSystemAdminHours" class="sales-quote-input" type="number" min="0" value="0"></td>
+                      <td id="salesQuoteSystemAdminRate">$225/hour</td>
+                      <td id="salesQuoteSystemAdminValue">$0</td>
+                    </tr>
+                    <tr>
+                      <td>Train the Trainer</td>
+                      <td><input id="salesQuoteTrainTheTrainerHours" class="sales-quote-input" type="number" min="0" value="0"></td>
+                      <td id="salesQuoteTrainTheTrainerRate">$225/hour</td>
+                      <td id="salesQuoteTrainTheTrainerValue">$0</td>
+                    </tr>
+                    <tr>
+                      <td>End User Training</td>
+                      <td><input id="salesQuoteEndUserTrainingHours" class="sales-quote-input" type="number" min="0" value="0"></td>
+                      <td id="salesQuoteEndUserTrainingRate">$225/hour</td>
+                      <td id="salesQuoteEndUserTrainingValue">$0</td>
+                    </tr>
+                    <tr>
+                      <td>Production Support</td>
+                      <td><input id="salesQuoteProductionSupportHours" class="sales-quote-input" type="number" min="0" value="0"></td>
+                      <td id="salesQuoteProductionSupportRate">$225/hour</td>
+                      <td id="salesQuoteProductionSupportValue">$0</td>
+                    </tr>
+                    <tr>
+                      <td>Project Management</td>
+                      <td><input id="salesQuotePmHours" class="sales-quote-input" type="number" min="0" value="0"></td>
+                      <td id="salesQuotePmRate">$225/hour</td>
+                      <td id="salesQuotePmValue">$0</td>
+                    </tr>
+                    <tr>
+                      <td>Estimated Travel</td>
+                      <td id="salesQuoteTravelHours">-</td>
+                      <td id="salesQuoteTravelRate">0 trip(s) x $2,400</td>
+                      <td id="salesQuoteTravelValue">$0</td>
+                    </tr>
+                    <tr class="service-summary-total">
+                      <td>Total Services Cost (w/o Travel Estimate)</td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td id="salesQuoteTotalServicesValue">$0</td>
+                    </tr>
+                    <tr class="service-summary-total">
+                      <td>Summary Total</td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td id="salesQuoteSummaryTotal">$0</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section class="step-panel" data-step-key="addons">
+            <div class="selection-block">
+              <div class="section-title-row">
+                <h3>Add-Ons</h3>
+                <button id="selectCommonAddons" class="ghost-button" type="button">Select Common Add-Ons</button>
+              </div>
+              <div id="addonOptions" class="checkbox-grid"></div>
+            </div>
+
+            <div class="selection-block">
+              <h3>Add-On Details</h3>
+              <div class="field-grid">
+                <label class="field hidden-step" id="esrCaseTypeCountField">
+                  <span>ESR Case Types</span>
+                  <input id="esrCaseTypeCount" type="number" min="0" value="0" placeholder="Number of case types">
+                </label>
+              </div>
+            </div>
+
+            <div class="selection-block">
+              <div class="section-title-row">
+                <div>
+                  <h3>Optional Services</h3>
+                  <p class="group-copy">Use this section for separately quoted optional items like configuration training, an additional module, or other elective scope.</p>
+                </div>
+                <button id="addOptionalItem" class="ghost-button" type="button">Add Optional Item</button>
+              </div>
+              <div class="service-toolbar optional-preset-toolbar">
+                <button class="ghost-button" type="button" data-optional-preset="config-training">Optional Config Training</button>
+                <button class="ghost-button" type="button" data-optional-preset="module">Optional Module</button>
+                <button class="ghost-button" type="button" data-optional-preset="pm">Optional PM</button>
+                <button class="ghost-button" type="button" data-optional-preset="conversion">Optional Conversion</button>
+              </div>
+              <div id="optionalItemsContainer" class="optional-items-container"></div>
+            </div>
+
+            <div class="selection-block">
+              <h3>Internal Notes</h3>
+              <label class="field">
+                <span>Scoping Notes</span>
+                <textarea id="internalNotes" placeholder="Enter any scoping assumptions, special requests, or known delivery considerations."></textarea>
+              </label>
+            </div>
+
+            <div class="selection-block service-group service-group-admin">
+              <p class="group-kicker">Admin</p>
+              <h3>Pricing Admin & Overrides</h3>
+              <p class="group-copy">Adjust default rates, service assumptions, and quote overrides without editing the code.</p>
+              <div class="field-grid">
+                <label class="field">
+                  <span>Delivery Rate</span>
+                  <input id="adminHourlyRate" type="number" min="0" value="225">
+                </label>
+                <label class="field">
+                  <span>Fixed Fee Rate</span>
+                  <input id="adminFixedFeeRate" type="number" min="0" value="250">
+                </label>
+                <label class="field">
+                  <span>PM %</span>
+                  <input id="adminPmPercentage" type="number" min="0" step="0.01" value="0.25">
+                </label>
+                <label class="field">
+                  <span>Tyler Process Hours</span>
+                  <input id="adminTylerProcessHours" type="number" min="0" value="36">
+                </label>
+                <label class="field">
+                  <span>Client Process Hours</span>
+                  <input id="adminClientProcessHours" type="number" min="0" value="16">
+                </label>
+                <label class="field">
+                  <span>Custom Form Price</span>
+                  <input id="adminCustomFormPrice" type="number" min="0" value="3000">
+                </label>
+                <label class="field">
+                  <span>Custom Report Price</span>
+                  <input id="adminCustomReportPrice" type="number" min="0" value="5000">
+                </label>
+                <label class="field">
+                  <span>PM Override Hours</span>
+                  <input id="pmOverrideHours" type="number" min="0" placeholder="No override">
+                </label>
+                <label class="field">
+                  <span>Implementation Override Hours</span>
+                  <input id="implementationOverrideHours" type="number" min="0" placeholder="No override">
+                </label>
+                <label class="field">
+                  <span>System Admin Override Hours</span>
+                  <input id="systemAdminOverrideHours" type="number" min="0" placeholder="No override">
+                </label>
+                <label class="field">
+                  <span>TNT Override Hours</span>
+                  <input id="trainTheTrainerOverrideHours" type="number" min="0" placeholder="No override">
+                </label>
+                <label class="field">
+                  <span>EUT Override Hours</span>
+                  <input id="eutOverrideHours" type="number" min="0" placeholder="No override">
+                </label>
+                <label class="field">
+                  <span>Conversion Override Price</span>
+                  <input id="conversionOverridePrice" type="number" min="0" placeholder="No override">
+                </label>
+                <label class="field">
+                  <span>Reporting Override Price</span>
+                  <input id="reportingOverridePrice" type="number" min="0" placeholder="No override">
+                </label>
+                <label class="field">
+                  <span>Integration Override Price</span>
+                  <input id="integrationOverridePrice" type="number" min="0" placeholder="No override">
+                </label>
+              </div>
+              <label class="field">
+                <span>Override Reason</span>
+                <textarea id="overrideReason" placeholder="Explain why the admin assumptions or override values were changed."></textarea>
+              </label>
+            </div>
+          </section>
+
+        </div>
+
+        <div class="stepper-actions">
+          <button id="prevStep" class="ghost-button" type="button">Back</button>
+          <button id="nextStep" class="primary-button" type="button">Next</button>
+        </div>
+      </section>
+
+      <section class="panel result-panel">
+        <div class="panel-heading">
+          <span class="section-kicker">Summary</span>
+          <h2>Quote Output</h2>
+          <p>Review the quote details, service summary, and investment notes.</p>
+        </div>
+
+        <div class="result-grid">
+          <article class="metric-card">
+            <span>Modules Selected</span>
+            <strong id="suiteCount">0</strong>
+            <small id="suiteSummary">None selected</small>
+          </article>
+          <article class="metric-card">
+            <span>Add-Ons Selected</span>
+            <strong id="selectedAddonCount">0</strong>
+            <small id="addonSummary">None selected</small>
+          </article>
+          <article class="metric-card accent">
+            <span>Services in Scope</span>
+            <strong id="serviceScopeCount">0</strong>
+            <small id="serviceScopeSummary">None selected</small>
+          </article>
+        </div>
+
+        <div class="quote-preview">
+          <div class="quote-header">
+            <div>
+              <p class="quote-label">Tyler Technologies</p>
+              <h3 id="quoteTitle">Unnamed opportunity</h3>
+            </div>
+            <button id="copySummary" class="secondary-button" type="button">Copy Summary</button>
+          </div>
+
+          <div class="quote-meta">
+            <div>
+              <span>Sales Resource</span>
+              <strong id="summarySalesRep">Not entered</strong>
+            </div>
+            <div>
+              <span>Entity Type</span>
+              <strong id="summaryClientType">City</strong>
+            </div>
+            <div>
+              <span>Users</span>
+              <strong id="summaryUsers">0</strong>
+            </div>
+            <div>
+              <span>Departments</span>
+              <strong id="summaryDepartments">Not entered</strong>
+            </div>
+            <div>
+              <span>Project Length</span>
+              <strong id="summaryGoLive">Not entered</strong>
+            </div>
+          </div>
+
+          <div class="summary-columns single">
+            <div class="document-section">
+              <h3>Quote Summary</h3>
+              <textarea id="quoteSummary" readonly></textarea>
+            </div>
+          </div>
+
+          <div class="summary-columns single">
+            <div class="document-section">
+              <h3>Base Scope Services Summary</h3>
+              <div class="table-shell">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Service</th>
+                      <th>Hours</th>
+                      <th>Rate Basis</th>
+                      <th>Value</th>
+                      <th>Optional</th>
+                      <th>Optional Qty / Hrs</th>
+                    </tr>
+                  </thead>
+                  <tbody id="serviceSummaryBody">
+                    <tr>
+                      <td colspan="6">No scoped services yet</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="summary-columns single">
+            <div class="document-section">
+              <h3>Optional Services Summary</h3>
+              <div class="table-shell">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Optional Item</th>
+                      <th>Hours</th>
+                      <th>Rate Basis</th>
+                      <th>Value</th>
+                    </tr>
+                  </thead>
+                  <tbody id="optionalServiceSummaryBody">
+                    <tr>
+                      <td colspan="4">No optional services quoted</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="summary-columns single">
+            <div class="document-section">
+              <h3>Override Audit Trail</h3>
+              <textarea id="overrideAuditTrail" readonly></textarea>
+            </div>
+          </div>
+
+          <div class="summary-columns single">
+            <div class="document-section">
+              <h3>Quote History</h3>
+              <textarea id="quoteHistory" readonly></textarea>
+            </div>
+          </div>
+
+          <div class="summary-columns single">
+            <div class="document-section">
+              <h3>Investment Summary Notes</h3>
+              <textarea id="quoteNotes" readonly></textarea>
+            </div>
+          </div>
+
+          <div class="summary-columns single">
+            <div class="quote-review-shell">
+              <h3>Quote Review</h3>
+              <p class="quote-review-copy">Upload or paste an existing quote, compare it to the pricer, then build a cleaner target recommendation.</p>
+
+              <div class="review-card">
+                <div class="review-card-head">
+                  <strong>1. Review Existing Quote (Optional)</strong>
+                  <span>Upload or paste an existing quote only when you want to compare it to the pricer.</span>
+                </div>
+                <div class="service-toolbar">
+                  <button id="uploadQuoteReviewButton" class="ghost-button" type="button">Upload Quote</button>
+                  <button id="analyzeUploadedQuote" class="secondary-button" type="button" onclick="window.runQuoteVarianceReview && window.runQuoteVarianceReview()">Analyze Quote Variance</button>
+                  <button id="applyReviewedQuoteToForm" class="ghost-button" type="button">Apply To Form</button>
+                  <input id="quoteReviewInput" type="file" accept=".txt,.md,.html,.htm,.json,.pdf,application/pdf" hidden>
+                </div>
+                <label class="field">
+                  <span>Uploaded Or Pasted Quote</span>
+                  <textarea id="reviewedQuoteText" placeholder="Upload a quote file or paste the quote text here for review."></textarea>
+                </label>
+              </div>
+
+              <div class="review-card">
+                <div class="review-card-head">
+                  <strong>2. Set Target</strong>
+                  <span>Enter the target service amount and any guardrails you want the recommendation to respect.</span>
+                </div>
+                <div class="field-grid">
+                  <label class="field">
+                    <span>Target Service Value</span>
+                    <input id="quoteReviewTargetValue" type="number" min="0" value="0" placeholder="Enter desired total">
+                  </label>
+                  <label class="field">
+                    <span>Target Assumptions</span>
+                    <textarea id="quoteReviewAssumptions" placeholder="Example: keep PM at 25%, do not reduce conversion, keep training in scope."></textarea>
+                  </label>
+                </div>
+                <div class="service-toolbar">
+                  <button id="buildTargetGuidance" class="secondary-button" type="button">Build Target Guidance</button>
+                  <button id="applyTargetGuidanceToQuote" class="ghost-button" type="button" onclick="window.applyTargetGuidanceNow && window.applyTargetGuidanceNow()">Update Quote From Target</button>
+                </div>
+              </div>
+
+              <div class="review-results-grid">
+                <label class="field review-output">
+                  <span>Quote Variance Review</span>
+                  <textarea id="quoteReviewResults" readonly></textarea>
+                </label>
+                <label class="field review-output">
+                  <span>Target Quote Guidance</span>
+                  <textarea id="quoteReviewRecommendations" readonly></textarea>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="quoteLibraryModal" class="library-modal hidden-step" aria-hidden="true" hidden>
+    <div class="library-backdrop" data-close-library="true"></div>
+    <div class="library-panel">
+      <div class="library-head">
+        <div>
+          <p class="section-kicker">Quote Library</p>
+          <h3>Find Saved Quotes</h3>
+          <p class="library-copy">Search by client name first, or use sales rep, module, and add-on keywords to find the quote you want to continue.</p>
+        </div>
+        <button id="closeQuoteLibrary" class="ghost-button" type="button" onclick="window.closeQuoteLibrary && window.closeQuoteLibrary()">Close</button>
+      </div>
+      <label class="field compact-field library-search">
+        <span>Search By Client Name</span>
+        <input id="savedQuoteSearch" type="text" placeholder="Start typing the client name, sales rep, module, or add-on">
+      </label>
+      <div id="savedQuotesList" class="saved-quotes-list library-results">
+        <p class="mini-muted">No saved quotes yet</p>
+      </div>
+      <div class="library-tools">
+        <p class="mini-muted">Advanced tools</p>
+        <div class="service-toolbar">
+          <button id="exportJson" class="ghost-button" type="button">Export JSON</button>
+          <button id="importJsonButton" class="ghost-button" type="button">Import JSON</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=20260417z"></script>
+</body>
+</html>
