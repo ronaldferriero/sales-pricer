@@ -3293,19 +3293,17 @@ function syncSharedProcessInputs() {
   const tylerTemplated = Number(els.tylerOwnedTemplatedProcesses?.value) || 0;
   const clientTemplatedInput = Number(els.clientOwnedTemplatedProcesses?.value) || 0;
   const appolloMode = isAppolloMode();
-  // Removed auto-forcing to "full" - let users choose their own delivery model
-  // const shouldForceFullServices = (
-  //   !appolloMode &&
-  //   els.serviceDeliveryModel?.value !== "addon-work"
-  //   && clientCustomInput === 0
-  //   && clientTemplatedInput === 0
-  //   && (tylerCustom > 0 || tylerTemplated > 0)
-  // );
-  // if (shouldForceFullServices && els.serviceDeliveryModel) {
-  //   els.serviceDeliveryModel.value = "full";
-  // }
+
   const deliveryModel = getServiceDeliveryModelConfig(els.serviceDeliveryModel?.value);
   const autoEstimateClient = deliveryModel.isShared && !deliveryModel.isCustomShared;
+
+  console.log('syncSharedProcessInputs:', {
+    deliveryModelValue: els.serviceDeliveryModel?.value,
+    isShared: deliveryModel.isShared,
+    autoEstimateClient,
+    tylerCustom,
+    tylerTemplated
+  });
   if (els.clientOwnedProcesses) {
     if (autoEstimateClient) {
       els.clientOwnedProcesses.value = String(estimateSharedClientCount(Number(els.tylerOwnedProcesses?.value) || 0));
@@ -7505,11 +7503,23 @@ async function initialize() {
 
   document.body.addEventListener("input", calculate);
   document.body.addEventListener("change", calculate);
-  els.serviceDeliveryModel?.addEventListener("change", () => {
+  els.serviceDeliveryModel?.addEventListener("change", (e) => {
+    console.log('Service Delivery Model changed to:', e.target.value);
     syncQuoteTypeFromDeliveryModel();
     syncSharedProcessInputs();
     applyQuoteTypeDefaults();
     calculate();
+
+    // Force show/hide shared services breakdown field
+    const deliveryModel = getServiceDeliveryModelConfig(e.target.value);
+    if (els.sharedServicesBreakdownField) {
+      if (deliveryModel.isShared) {
+        els.sharedServicesBreakdownField.classList.remove('hidden-step');
+        console.log('Showing shared services breakdown field');
+      } else {
+        els.sharedServicesBreakdownField.classList.add('hidden-step');
+      }
+    }
   });
   els.sharedServicesBreakdown?.addEventListener("change", () => {
     syncSharedProcessInputs();
