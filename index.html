@@ -197,7 +197,6 @@
         </div>
         <div class="workspace-actions workspace-actions-wrap">
           <button id="openQuoteLibrary" class="ghost-button" type="button">Open Saved Quotes</button>
-          <button id="compareQuotes" class="secondary-button" type="button" onclick="window.openComparisonModal && window.openComparisonModal()">⚖️ Compare Quotes</button>
           <button id="selectArchiveFolder" class="ghost-button" type="button">Select Version Archive Folder</button>
           <button id="shareQuote" class="secondary-button" type="button" onclick="window.generateShareableLink && window.generateShareableLink()">🔗 Share Link</button>
           <button id="emailQuote" class="secondary-button" type="button" onclick="window.exportToEmail && window.exportToEmail()">📧 Email Quote</button>
@@ -1231,24 +1230,6 @@
       </div>
     </div>
     <!-- END ANALYTICS PAGE -->
-  </div>
-
-  <div id="quoteComparisonModal" class="library-modal hidden-step" aria-hidden="true" hidden>
-    <div class="library-backdrop" onclick="window.closeComparisonModal && window.closeComparisonModal()"></div>
-    <div class="library-panel">
-      <div class="library-head">
-        <div>
-          <p class="section-kicker">Quote Comparison</p>
-          <h3>Compare Quotes Side-by-Side</h3>
-          <p class="library-copy">Add up to 3 quotes to compare their details and spot differences.</p>
-        </div>
-        <button class="ghost-button" type="button" onclick="window.closeComparisonModal && window.closeComparisonModal()">Close</button>
-      </div>
-      <div class="service-toolbar">
-        <button class="secondary-button" type="button" onclick="window.addCurrentQuoteToComparison && window.addCurrentQuoteToComparison()">Add Current Quote</button>
-      </div>
-      <div id="quoteComparisonGrid" class="comparison-grid"></div>
-    </div>
   </div>
 
   <div id="quoteLibraryModal" class="library-modal hidden-step" aria-hidden="true" hidden>
