@@ -7809,3 +7809,373 @@ window.copyToClipboard = copyToClipboard;
 // Initialize dark mode and copy buttons
 initDarkMode();
 setTimeout(addCopyButtons, 500);
+
+// ========== COLLABORATION & SHARING FEATURES ==========
+
+// Generate shareable link
+function generateShareableLink() {
+  const quoteData = captureFormState();
+  const compressed = btoa(JSON.stringify(quoteData));
+  const shareUrl = `${window.location.origin}${window.location.pathname}?share=${encodeURIComponent(compressed)}`;
+
+  copyToClipboard(shareUrl);
+  alert('Shareable link copied to clipboard!\n\nAnyone with this link can view and edit this quote.');
+  return shareUrl;
+}
+
+// Load quote from URL parameter
+function loadSharedQuote() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const shareData = urlParams.get('share');
+
+  if (shareData) {
+    try {
+      const decompressed = JSON.parse(atob(decodeURIComponent(shareData)));
+      applyFormState(decompressed);
+      calculate();
+      alert('Quote loaded from shared link!');
+      // Remove the share parameter from URL without reloading
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } catch (e) {
+      console.error('Failed to load shared quote:', e);
+      alert('Failed to load shared quote. The link may be invalid or corrupted.');
+    }
+  }
+}
+
+// Export to Email
+function exportToEmail() {
+  const quoteData = captureFormState();
+  const cityName = quoteData.cityName || 'Unnamed Client';
+  const quoteNumber = quoteData.quoteNumber || 'No Quote Number';
+
+  const subject = `Tyler EPL Sales Quote - ${cityName} (${quoteNumber})`;
+
+  const body = `Hi,
+
+Please review the Tyler EPL Sales quote for ${cityName}.
+
+Quote Number: ${quoteNumber}
+Client: ${cityName}
+State: ${quoteData.stateName || 'Not specified'}
+Users: ${quoteData.userCount || 0}
+Sales Rep: ${quoteData.salesRep || 'Not specified'}
+
+Modules Selected:
+${quoteData.selectedSuites?.map(s => `- ${s}`).join('\n') || 'None'}
+
+Add-Ons Selected:
+${quoteData.selectedAddons?.map(a => `- ${a}`).join('\n') || 'None'}
+
+View and edit this quote online:
+${window.location.origin}${window.location.pathname}
+
+Best regards`;
+
+  const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = mailtoLink;
+}
+
+window.generateShareableLink = generateShareableLink;
+window.exportToEmail = exportToEmail;
+
+// Load shared quote on page load
+setTimeout(loadSharedQuote, 1000);
+
+// ========== QUOTE TEMPLATES & PRESETS ==========
+
+// Save current quote as template
+function saveAsTemplate() {
+  const templateName = prompt('Enter a name for this template:');
+  if (!templateName) return;
+
+  const quoteData = captureFormState();
+  const template = {
+    name: templateName,
+    data: quoteData,
+    createdAt: new Date().toISOString()
+  };
+
+  const templates = JSON.parse(localStorage.getItem('quoteTemplates') || '[]');
+  templates.push(template);
+  localStorage.setItem('quoteTemplates', JSON.stringify(templates));
+
+  alert(`Template "${templateName}" saved successfully!`);
+  renderTemplatesList();
+}
+
+// Load template
+function loadTemplate(templateName) {
+  const templates = JSON.parse(localStorage.getItem('quoteTemplates') || '[]');
+  const template = templates.find(t => t.name === templateName);
+
+  if (template) {
+    applyFormState(template.data);
+    calculate();
+    alert(`Template "${templateName}" loaded!`);
+  }
+}
+
+// Delete template
+function deleteTemplate(templateName) {
+  if (!confirm(`Delete template "${templateName}"?`)) return;
+
+  const templates = JSON.parse(localStorage.getItem('quoteTemplates') || '[]');
+  const filtered = templates.filter(t => t.name !== templateName);
+  localStorage.setItem('quoteTemplates', JSON.stringify(filtered));
+
+  alert(`Template "${templateName}" deleted.`);
+  renderTemplatesList();
+}
+
+// Render templates list
+function renderTemplatesList() {
+  const container = document.getElementById('templatesList');
+  if (!container) return;
+
+  const templates = JSON.parse(localStorage.getItem('quoteTemplates') || '[]');
+
+  if (templates.length === 0) {
+    container.innerHTML = '<p class="mini-muted">No templates saved yet</p>';
+    return;
+  }
+
+  container.innerHTML = templates.map(t => `
+    <div class="template-item">
+      <div>
+        <strong>${t.name}</strong>
+        <small>${new Date(t.createdAt).toLocaleDateString()}</small>
+      </div>
+      <div>
+        <button class="ghost-button" onclick="loadTemplate('${t.name}')">Load</button>
+        <button class="ghost-button" onclick="deleteTemplate('${t.name}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Quick-start presets
+const PRESETS = {
+  'standard-city': {
+    name: 'Standard City Implementation',
+    cityName: 'City of Example',
+    stateName: 'TX',
+    clientType: 'city',
+    userCount: 50,
+    populationValue: 75000,
+    goLiveTarget: 12,
+    serviceDeliveryModel: 'shared',
+    sharedServicesBreakdown: '70-30',
+    selectedSuites: ['community-development'],
+    selectedAddons: ['civic-access', 'ereviews'],
+    includeImplementation: true,
+    includeTraining: true,
+    includeConversion: true,
+    includeIntegration: false,
+    includeReports: true,
+    includeTravel: true
+  },
+  'county-addon': {
+    name: 'County Add-On Only',
+    cityName: 'Example County',
+    stateName: 'TX',
+    clientType: 'county',
+    userCount: 25,
+    populationValue: 150000,
+    goLiveTarget: 6,
+    serviceDeliveryModel: 'addon-work',
+    selectedSuites: [],
+    selectedAddons: ['decision-engine', 'workforce-mobile'],
+    includeImplementation: true,
+    includeTraining: true,
+    includeConversion: false,
+    includeIntegration: false,
+    includeReports: false,
+    includeTravel: false
+  },
+  'full-implementation': {
+    name: 'Full Implementation - All Modules',
+    cityName: 'City of Full Services',
+    stateName: 'CA',
+    clientType: 'city',
+    userCount: 100,
+    populationValue: 200000,
+    goLiveTarget: 18,
+    serviceDeliveryModel: 'full',
+    selectedSuites: ['community-development', 'business-management', 'environmental-health'],
+    selectedAddons: ['civic-access', 'ereviews', 'decision-engine', 'workforce-mobile', 'content-manager'],
+    includeImplementation: true,
+    includeTraining: true,
+    includeConversion: true,
+    includeIntegration: true,
+    includeReports: true,
+    includeTravel: true
+  }
+};
+
+function applyPreset(presetKey) {
+  const preset = PRESETS[presetKey];
+  if (!preset) return;
+
+  applyFormState(preset);
+  calculate();
+  alert(`Preset "${preset.name}" applied!`);
+}
+
+window.saveAsTemplate = saveAsTemplate;
+window.loadTemplate = loadTemplate;
+window.deleteTemplate = deleteTemplate;
+window.applyPreset = applyPreset;
+
+// Initialize templates list
+setTimeout(renderTemplatesList, 1000);
+
+// ========== ENHANCED ANALYTICS DASHBOARD ==========
+
+// Get all saved quotes for analytics
+function getAllQuotesForAnalytics() {
+  const quotes = JSON.parse(localStorage.getItem('savedQuotes') || '[]');
+  return quotes.map(q => ({
+    ...q,
+    createdDate: q.createdAt ? new Date(q.createdAt) : new Date(),
+    totalValue: calculateQuoteValue(q),
+    modules: q.selectedSuites || [],
+    addons: q.selectedAddons || []
+  }));
+}
+
+// Calculate quote value from quote data
+function calculateQuoteValue(quoteData) {
+  // Simplified calculation - you may want to use the full calculate() logic
+  const baseHours = (quoteData.implementationHours || 0) + (quoteData.pmHours || 0);
+  const rate = quoteData.adminHourlyRate || 225;
+  return baseHours * rate;
+}
+
+// Apply analytics filters
+function applyAnalyticsFilters() {
+  const startDate = document.getElementById('analyticsStartDate')?.value;
+  const endDate = document.getElementById('analyticsEndDate')?.value;
+  const salesRep = document.getElementById('analyticsSalesRep')?.value;
+  const region = document.getElementById('analyticsRegion')?.value;
+
+  let quotes = getAllQuotesForAnalytics();
+
+  // Filter by date range
+  if (startDate) {
+    const start = new Date(startDate);
+    quotes = quotes.filter(q => q.createdDate >= start);
+  }
+  if (endDate) {
+    const end = new Date(endDate);
+    quotes = quotes.filter(q => q.createdDate <= end);
+  }
+
+  // Filter by sales rep
+  if (salesRep && salesRep !== 'all') {
+    quotes = quotes.filter(q => q.salesRep === salesRep);
+  }
+
+  // Filter by region (state)
+  if (region && region !== 'all') {
+    quotes = quotes.filter(q => q.stateName === region);
+  }
+
+  updateAnalyticsDashboard(quotes);
+}
+
+// Update analytics dashboard with filtered data
+function updateAnalyticsDashboard(quotes) {
+  // Calculate metrics
+  const totalQuotes = quotes.length;
+  const totalValue = quotes.reduce((sum, q) => sum + q.totalValue, 0);
+  const avgDealSize = totalQuotes > 0 ? totalValue / totalQuotes : 0;
+
+  // Group by type
+  const projectQuotes = quotes.filter(q => q.modules.length > 0);
+  const addonQuotes = quotes.filter(q => q.modules.length === 0 && q.addons.length > 0);
+
+  // Update DOM
+  const avgDealEl = document.getElementById('analyticsAvgDeal');
+  const totalValueEl = document.getElementById('analyticsTotalValue');
+  const conversionRateEl = document.getElementById('analyticsConversionRate');
+
+  if (avgDealEl) avgDealEl.textContent = `$${avgDealSize.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+  if (totalValueEl) totalValueEl.textContent = `$${totalValue.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+  if (conversionRateEl) conversionRateEl.textContent = `${totalQuotes > 0 ? Math.round((projectQuotes.length / totalQuotes) * 100) : 0}%`;
+
+  // Update charts
+  updateAnalyticsCharts(quotes);
+}
+
+// Update analytics charts
+function updateAnalyticsCharts(quotes) {
+  // Group by month
+  const monthlyData = {};
+  quotes.forEach(q => {
+    const month = q.createdDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+    monthlyData[month] = (monthlyData[month] || 0) + q.totalValue;
+  });
+
+  // Render simple trend chart
+  const chartEl = document.getElementById('analyticsTrendChart');
+  if (chartEl && Object.keys(monthlyData).length > 0) {
+    const maxValue = Math.max(...Object.values(monthlyData));
+    chartEl.innerHTML = Object.entries(monthlyData).map(([month, value]) => `
+      <div class="chart-bar-row">
+        <span class="chart-month">${month}</span>
+        <div class="chart-bar-track">
+          <div class="chart-bar-fill" style="width: ${(value / maxValue) * 100}%"></div>
+        </div>
+        <span class="chart-value">$${(value / 1000).toFixed(0)}k</span>
+      </div>
+    `).join('');
+  }
+}
+
+// Export analytics to CSV
+function exportAnalyticsToCSV() {
+  const quotes = getAllQuotesForAnalytics();
+
+  if (quotes.length === 0) {
+    alert('No quotes to export');
+    return;
+  }
+
+  const headers = ['Quote Number', 'Client', 'State', 'Sales Rep', 'Created Date', 'Users', 'Modules', 'Add-Ons', 'Estimated Value'];
+  const rows = quotes.map(q => [
+    q.quoteNumber || '',
+    q.cityName || '',
+    q.stateName || '',
+    q.salesRep || '',
+    q.createdDate.toLocaleDateString(),
+    q.userCount || 0,
+    q.modules.join('; '),
+    q.addons.join('; '),
+    q.totalValue.toFixed(2)
+  ]);
+
+  const csvContent = [
+    headers.join(','),
+    ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+  ].join('\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `sales-quotes-analytics-${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  window.URL.revokeObjectURL(url);
+
+  alert('Analytics exported to CSV!');
+}
+
+window.applyAnalyticsFilters = applyAnalyticsFilters;
+window.exportAnalyticsToCSV = exportAnalyticsToCSV;
+
+// Initialize analytics on load
+setTimeout(() => {
+  const quotes = getAllQuotesForAnalytics();
+  updateAnalyticsDashboard(quotes);
+}, 1500);

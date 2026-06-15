@@ -37,6 +37,56 @@
         <div class="hero-analytics">
           <div class="analytics-card">
             <div class="analytics-head">
+              <h3>Analytics Filters</h3>
+              <small>Filter quotes by date, rep, or region</small>
+            </div>
+            <div class="analytics-filters">
+              <label class="field compact-field">
+                <span>Start Date</span>
+                <input id="analyticsStartDate" type="date" onchange="window.applyAnalyticsFilters && window.applyAnalyticsFilters()">
+              </label>
+              <label class="field compact-field">
+                <span>End Date</span>
+                <input id="analyticsEndDate" type="date" onchange="window.applyAnalyticsFilters && window.applyAnalyticsFilters()">
+              </label>
+              <label class="field compact-field">
+                <span>Sales Rep</span>
+                <select id="analyticsSalesRep" onchange="window.applyAnalyticsFilters && window.applyAnalyticsFilters()">
+                  <option value="all">All Reps</option>
+                </select>
+              </label>
+              <label class="field compact-field">
+                <span>Region</span>
+                <select id="analyticsRegion" onchange="window.applyAnalyticsFilters && window.applyAnalyticsFilters()">
+                  <option value="all">All States</option>
+                </select>
+              </label>
+            </div>
+            <button class="secondary-button" type="button" style="margin-top: 12px; width: 100%;" onclick="window.exportAnalyticsToCSV && window.exportAnalyticsToCSV()">📊 Export to CSV</button>
+          </div>
+          <div class="analytics-card">
+            <div class="analytics-head">
+              <h3>Key Metrics</h3>
+              <small>Deal performance overview</small>
+            </div>
+            <div class="analytics-stat-grid">
+              <div class="analytics-stat">
+                <span>Avg Deal Size</span>
+                <strong id="analyticsAvgDeal">$0</strong>
+              </div>
+              <div class="analytics-stat">
+                <span>Total Value</span>
+                <strong id="analyticsTotalValue">$0</strong>
+              </div>
+              <div class="analytics-stat">
+                <span>Conversion Rate</span>
+                <strong id="analyticsConversionRate">0%</strong>
+              </div>
+            </div>
+            <div id="analyticsTrendChart" class="analytics-trend-chart"></div>
+          </div>
+          <div class="analytics-card">
+            <div class="analytics-head">
               <h3>Quote Mix</h3>
               <small>Saved quotes by type</small>
             </div>
@@ -63,34 +113,6 @@
               </div>
             </div>
           </div>
-          <div class="analytics-card">
-            <div class="analytics-head">
-              <h3>YTD Performance</h3>
-              <small>Current year compared to prior year</small>
-            </div>
-            <div class="analytics-stat-grid">
-              <div class="analytics-stat">
-                <span>YTD Quotes</span>
-                <strong id="analyticsYtdQuotes">0</strong>
-              </div>
-              <div class="analytics-stat">
-                <span>YoY Change</span>
-                <strong id="analyticsYoyChange">0%</strong>
-              </div>
-            </div>
-            <div class="mini-chart">
-              <div class="mini-chart-row">
-                <span id="chartPriorYearLabel">Prior Year</span>
-                <div class="mini-chart-track"><div id="chartPriorYearBar" class="mini-chart-fill mini-chart-fill-slate"></div></div>
-                <strong id="chartPriorYearValue">0</strong>
-              </div>
-              <div class="mini-chart-row">
-                <span id="chartCurrentYearLabel">Current Year</span>
-                <div class="mini-chart-track"><div id="chartCurrentYearBar" class="mini-chart-fill mini-chart-fill-gold"></div></div>
-                <strong id="chartCurrentYearValue">0</strong>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
       <div class="hero-card">
@@ -108,11 +130,26 @@
           <button id="newQuote" class="ghost-button" type="button" onclick="window.startNewQuoteNow && window.startNewQuoteNow()">New Quote</button>
           <button id="saveQuote" class="primary-button" type="button" disabled>Save Quote</button>
           <button id="saveAsQuote" class="secondary-button" type="button" disabled>Save As</button>
+          <button id="saveTemplate" class="ghost-button" type="button" onclick="window.saveAsTemplate && window.saveAsTemplate()">💾 Save as Template</button>
           <p id="saveStatus" class="workspace-status">Saved quotes stay available in this browser after you reopen the page.</p>
+        </div>
+        <div class="workspace-presets">
+          <p class="workspace-user-help">Quick Start Presets:</p>
+          <div class="service-toolbar">
+            <button class="ghost-button" type="button" onclick="window.applyPreset && window.applyPreset('standard-city')">Standard City</button>
+            <button class="ghost-button" type="button" onclick="window.applyPreset && window.applyPreset('county-addon')">County Add-On</button>
+            <button class="ghost-button" type="button" onclick="window.applyPreset && window.applyPreset('full-implementation')">Full Implementation</button>
+          </div>
+        </div>
+        <div class="workspace-templates">
+          <p class="workspace-user-help">My Templates:</p>
+          <div id="templatesList" class="templates-list"></div>
         </div>
         <div class="workspace-actions workspace-actions-wrap">
           <button id="openQuoteLibrary" class="ghost-button" type="button">Open Saved Quotes</button>
           <button id="selectArchiveFolder" class="ghost-button" type="button">Select Version Archive Folder</button>
+          <button id="shareQuote" class="secondary-button" type="button" onclick="window.generateShareableLink && window.generateShareableLink()">🔗 Share Link</button>
+          <button id="emailQuote" class="secondary-button" type="button" onclick="window.exportToEmail && window.exportToEmail()">📧 Email Quote</button>
           <button id="printQuote" class="ghost-button" type="button" onclick="window.printQuote && window.printQuote()">🖨️ Print</button>
           <button id="exportWord" class="ghost-button" type="button" onclick="window.exportWordQuote && window.exportWordQuote()">Export Word</button>
           <button id="exportPdf" class="ghost-button" type="button" onclick="window.exportPdfQuote && window.exportPdfQuote()">Export PDF</button>
