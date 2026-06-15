@@ -20,7 +20,19 @@
       <option value="CAD">CAD (C$)</option>
     </select>
   </div>
+
+  <nav class="main-nav">
+    <button class="nav-tab active" data-page="quotes" onclick="window.switchPage && window.switchPage('quotes')">
+      📝 Quotes
+    </button>
+    <button class="nav-tab" data-page="analytics" onclick="window.switchPage && window.switchPage('analytics')">
+      📊 Analytics
+    </button>
+  </nav>
+
   <div class="page-shell">
+    <!-- QUOTES PAGE -->
+    <div id="quotesPage" class="page-content active">
     <header class="hero">
       <div class="hero-copy-block">
         <p class="eyebrow">Tyler Technologies</p>
@@ -46,8 +58,26 @@
             <strong id="heroSavedQuotes">0</strong>
           </article>
         </div>
-        <div class="hero-analytics">
-          <div class="analytics-card">
+        <div class="hero-kpis">
+          <article class="hero-kpi">
+            <span>Scoped Services</span>
+            <strong id="heroScopedServices">0</strong>
+          </article>
+          <article class="hero-kpi">
+            <span>Modules Selected</span>
+            <strong id="heroModulesSelected">0</strong>
+          </article>
+          <article class="hero-kpi">
+            <span>Add-Ons Selected</span>
+            <strong id="heroAddonsSelected">0</strong>
+          </article>
+          <article class="hero-kpi">
+            <span>Saved Quotes</span>
+            <strong id="heroSavedQuotes">0</strong>
+          </article>
+        </div>
+      </div>
+      <div class="hero-card">
             <div class="analytics-head">
               <h3>Analytics Filters</h3>
               <small>Filter quotes by date, rep, or region</small>
@@ -1076,6 +1106,131 @@
         </div>
       </section>
     </main>
+    </div>
+    <!-- END QUOTES PAGE -->
+
+    <!-- ANALYTICS PAGE -->
+    <div id="analyticsPage" class="page-content">
+      <header class="analytics-hero">
+        <div class="analytics-hero-content">
+          <h1 class="analytics-title">📊 Analytics Dashboard</h1>
+          <p class="analytics-subtitle">Track your sales performance, analyze trends, and gain insights from your quote history.</p>
+        </div>
+      </header>
+
+      <div class="analytics-grid">
+        <div class="analytics-card">
+          <div class="analytics-head">
+            <h3>Analytics Filters</h3>
+            <small>Filter quotes by date, rep, or region</small>
+          </div>
+          <div class="analytics-filters">
+            <label class="field compact-field">
+              <span>Start Date</span>
+              <input id="analyticsStartDate" type="date" onchange="window.applyAnalyticsFilters && window.applyAnalyticsFilters()">
+            </label>
+            <label class="field compact-field">
+              <span>End Date</span>
+              <input id="analyticsEndDate" type="date" onchange="window.applyAnalyticsFilters && window.applyAnalyticsFilters()">
+            </label>
+            <label class="field compact-field">
+              <span>Sales Rep</span>
+              <select id="analyticsSalesRep" onchange="window.applyAnalyticsFilters && window.applyAnalyticsFilters()">
+                <option value="all">All Reps</option>
+              </select>
+            </label>
+            <label class="field compact-field">
+              <span>Region</span>
+              <select id="analyticsRegion" onchange="window.applyAnalyticsFilters && window.applyAnalyticsFilters()">
+                <option value="all">All States</option>
+              </select>
+            </label>
+          </div>
+          <button class="secondary-button" type="button" style="margin-top: 12px; width: 100%;" onclick="window.exportAnalyticsToCSV && window.exportAnalyticsToCSV()">📊 Export to CSV</button>
+        </div>
+
+        <div class="analytics-card">
+          <div class="analytics-head">
+            <h3>Key Metrics</h3>
+            <small>Deal performance overview</small>
+          </div>
+          <div class="analytics-stat-grid">
+            <div class="analytics-stat">
+              <span>Avg Deal Size</span>
+              <strong id="analyticsAvgDeal">$0</strong>
+            </div>
+            <div class="analytics-stat">
+              <span>Total Value</span>
+              <strong id="analyticsTotalValue">$0</strong>
+            </div>
+            <div class="analytics-stat">
+              <span>Conversion Rate</span>
+              <strong id="analyticsConversionRate">0%</strong>
+            </div>
+          </div>
+          <div id="analyticsTrendChart" class="analytics-trend-chart"></div>
+        </div>
+
+        <div class="analytics-card">
+          <div class="analytics-head">
+            <h3>Quote Mix</h3>
+            <small>Saved quotes by type</small>
+          </div>
+          <div class="analytics-stat-grid">
+            <div class="analytics-stat">
+              <span>Project Quotes</span>
+              <strong id="analyticsProjectQuotes">0</strong>
+            </div>
+            <div class="analytics-stat">
+              <span>Add-On Quotes</span>
+              <strong id="analyticsAddonQuotes">0</strong>
+            </div>
+          </div>
+          <div class="mini-chart">
+            <div class="mini-chart-row">
+              <span>Projects</span>
+              <div class="mini-chart-track"><div id="chartProjectsBar" class="mini-chart-fill mini-chart-fill-brand"></div></div>
+              <strong id="chartProjectsValue">0</strong>
+            </div>
+            <div class="mini-chart-row">
+              <span>Add-Ons</span>
+              <div class="mini-chart-track"><div id="chartAddonsBar" class="mini-chart-fill mini-chart-fill-teal"></div></div>
+              <strong id="chartAddonsValue">0</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="analytics-card">
+          <div class="analytics-head">
+            <h3>YTD Performance</h3>
+            <small>Current year compared to prior year</small>
+          </div>
+          <div class="analytics-stat-grid">
+            <div class="analytics-stat">
+              <span>YTD Quotes</span>
+              <strong id="analyticsYtdQuotes">0</strong>
+            </div>
+            <div class="analytics-stat">
+              <span>YoY Change</span>
+              <strong id="analyticsYoyChange">0%</strong>
+            </div>
+          </div>
+          <div class="mini-chart">
+            <div class="mini-chart-row">
+              <span id="chartPriorYearLabel">Prior Year</span>
+              <div class="mini-chart-track"><div id="chartPriorYearBar" class="mini-chart-fill mini-chart-fill-slate"></div></div>
+              <strong id="chartPriorYearValue">0</strong>
+            </div>
+            <div class="mini-chart-row">
+              <span id="chartCurrentYearLabel">Current Year</span>
+              <div class="mini-chart-track"><div id="chartCurrentYearBar" class="mini-chart-fill mini-chart-fill-gold"></div></div>
+              <strong id="chartCurrentYearValue">0</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- END ANALYTICS PAGE -->
   </div>
 
   <div id="quoteComparisonModal" class="library-modal hidden-step" aria-hidden="true" hidden>

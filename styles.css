@@ -1770,6 +1770,56 @@ tbody tr:hover {
   }
 }
 
+/* Main Navigation */
+.main-nav {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  gap: 8px;
+  background: var(--panel-strong);
+  padding: 8px;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--line);
+}
+
+.nav-tab {
+  padding: 12px 24px;
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-tab:hover {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.nav-tab.active {
+  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+  color: white;
+  box-shadow: var(--shadow-sm), 0 0 20px rgba(102, 126, 234, 0.3);
+}
+
+/* Page Content */
+.page-content {
+  display: none;
+  animation: fadeIn 0.5s ease;
+}
+
+.page-content.active {
+  display: block;
+}
+
 /* Top Toolbar */
 .top-toolbar {
   position: fixed;
@@ -2244,4 +2294,54 @@ tbody tr:hover {
     rgba(118, 75, 162, 0.9) 100%);
   backdrop-filter: blur(20px) saturate(200%);
   -webkit-backdrop-filter: blur(20px) saturate(200%);
+}
+
+/* Analytics Page Styles */
+.analytics-hero {
+  margin-bottom: 32px;
+  padding: 48px 32px;
+  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 50%, #764ba2 100%);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  color: white;
+  text-align: center;
+}
+
+.analytics-hero-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.analytics-title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  margin: 0 0 16px 0;
+  letter-spacing: -0.02em;
+}
+
+.analytics-subtitle {
+  font-size: 1.125rem;
+  opacity: 0.9;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px;
+  margin-bottom: 48px;
+}
+
+@media (max-width: 768px) {
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .main-nav {
+    left: 20px;
+    right: 20px;
+    transform: none;
+    width: auto;
+  }
 }
